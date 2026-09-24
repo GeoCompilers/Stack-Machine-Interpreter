@@ -1,0 +1,61 @@
+[
+  "READ",
+  {
+    "ST": "n"
+  },
+  {
+    "CONST": 1
+  },
+  {
+    "ST": "result"
+  },
+  {
+    "JMP": "L_while_cond_5"
+  },
+  {
+    "LABEL": "L_while_cody_4"
+  },
+  {
+    "LD": "result"
+  },
+  {
+    "LD": "n"
+  },
+  {
+    "BINOP": "*"
+  },
+  {
+    "ST": "result"
+  },
+  {
+    "LD": "n"
+  },
+  {
+    "CONST": 1
+  },
+  {
+    "BINOP": "-"
+  },
+  {
+    "ST": "n"
+  },
+  {
+    "LABEL": "L_while_cond_5"
+  },
+  {
+    "LD": "n"
+  },
+  {
+    "CONST": 1
+  },
+  {
+    "BINOP": ">"
+  },
+  {
+    "JNZ": "L_while_cody_4"
+  },
+  {
+    "LD": "result"
+  },
+  "WRITE"
+]

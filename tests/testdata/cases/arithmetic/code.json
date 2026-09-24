@@ -1,0 +1,52 @@
+[
+  {
+    "CONST": 7
+  },
+  {
+    "CONST": 3
+  },
+  {
+    "BINOP": "+"
+  },
+  "WRITE",
+  {
+    "CONST": 7
+  },
+  {
+    "CONST": 3
+  },
+  {
+    "BINOP": "-"
+  },
+  "WRITE",
+  {
+    "CONST": 7
+  },
+  {
+    "CONST": 3
+  },
+  {
+    "BINOP": "*"
+  },
+  "WRITE",
+  {
+    "CONST": 7
+  },
+  {
+    "CONST": 3
+  },
+  {
+    "BINOP": "/"
+  },
+  "WRITE",
+  {
+    "CONST": 7
+  },
+  {
+    "CONST": 3
+  },
+  {
+    "BINOP": "%"
+  },
+  "WRITE"
+]

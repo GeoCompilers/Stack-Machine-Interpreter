@@ -1,0 +1,12 @@
+[
+  {
+    "JMP": "end"
+  },
+  {
+    "CONST": 99
+  },
+  "WRITE",
+  {
+    "LABEL": "end"
+  }
+]

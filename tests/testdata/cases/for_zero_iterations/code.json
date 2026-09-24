@@ -1,0 +1,49 @@
+[
+  {
+    "CONST": 5
+  },
+  {
+    "ST": "i"
+  },
+  {
+    "JMP": "L_while_cond_4"
+  },
+  {
+    "LABEL": "L_while_cody_3"
+  },
+  {
+    "CONST": 99
+  },
+  "WRITE",
+  {
+    "LD": "i"
+  },
+  {
+    "CONST": 1
+  },
+  {
+    "BINOP": "+"
+  },
+  {
+    "ST": "i"
+  },
+  {
+    "LABEL": "L_while_cond_4"
+  },
+  {
+    "LD": "i"
+  },
+  {
+    "CONST": 3
+  },
+  {
+    "BINOP": "<"
+  },
+  {
+    "JNZ": "L_while_cody_3"
+  },
+  {
+    "LD": "i"
+  },
+  "WRITE"
+]

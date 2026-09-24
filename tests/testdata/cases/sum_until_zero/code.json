@@ -1,0 +1,53 @@
+[
+  {
+    "CONST": 0
+  },
+  {
+    "ST": "sum"
+  },
+  "READ",
+  {
+    "ST": "x"
+  },
+  {
+    "JMP": "L_while_cond_5"
+  },
+  {
+    "LABEL": "L_while_cody_4"
+  },
+  {
+    "LD": "sum"
+  },
+  {
+    "LD": "x"
+  },
+  {
+    "BINOP": "+"
+  },
+  {
+    "ST": "sum"
+  },
+  "READ",
+  {
+    "ST": "x"
+  },
+  {
+    "LABEL": "L_while_cond_5"
+  },
+  {
+    "LD": "x"
+  },
+  {
+    "CONST": 0
+  },
+  {
+    "BINOP": "!="
+  },
+  {
+    "JNZ": "L_while_cody_4"
+  },
+  {
+    "LD": "sum"
+  },
+  "WRITE"
+]

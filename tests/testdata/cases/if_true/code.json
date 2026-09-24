@@ -1,0 +1,29 @@
+[
+  {
+    "CONST": 5
+  },
+  {
+    "JZ": "L_else_2"
+  },
+  {
+    "CONST": 1
+  },
+  "WRITE",
+  {
+    "JMP": "L_seq_1"
+  },
+  {
+    "LABEL": "L_else_2"
+  },
+  {
+    "CONST": 2
+  },
+  "WRITE",
+  {
+    "LABEL": "L_seq_1"
+  },
+  {
+    "CONST": 3
+  },
+  "WRITE"
+]

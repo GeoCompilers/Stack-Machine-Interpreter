@@ -1,0 +1,57 @@
+[
+  "READ",
+  {
+    "ST": "x"
+  },
+  {
+    "LD": "x"
+  },
+  {
+    "CONST": 0
+  },
+  {
+    "BINOP": "<"
+  },
+  {
+    "JZ": "L_else_2"
+  },
+  {
+    "CONST": 1
+  },
+  "WRITE",
+  {
+    "JMP": "L_end_0"
+  },
+  {
+    "LABEL": "L_else_2"
+  },
+  {
+    "LD": "x"
+  },
+  {
+    "CONST": 0
+  },
+  {
+    "BINOP": "=="
+  },
+  {
+    "JZ": "L_else_3"
+  },
+  {
+    "CONST": 2
+  },
+  "WRITE",
+  {
+    "JMP": "L_end_0"
+  },
+  {
+    "LABEL": "L_else_3"
+  },
+  {
+    "CONST": 3
+  },
+  "WRITE",
+  {
+    "LABEL": "L_end_0"
+  }
+]

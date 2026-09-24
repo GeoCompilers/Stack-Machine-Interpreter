@@ -1,0 +1,16 @@
+[
+  {
+    "CONST": 99
+  },
+  {
+    "CONST": 8
+  },
+  {
+    "CONST": 3
+  },
+  {
+    "BINOP": "-"
+  },
+  "WRITE",
+  "WRITE"
+]

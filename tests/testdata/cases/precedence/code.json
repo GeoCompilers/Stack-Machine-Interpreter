@@ -1,0 +1,98 @@
+[
+  {
+    "CONST": 2
+  },
+  {
+    "CONST": 3
+  },
+  {
+    "CONST": 4
+  },
+  {
+    "BINOP": "*"
+  },
+  {
+    "BINOP": "+"
+  },
+  "WRITE",
+  {
+    "CONST": 2
+  },
+  {
+    "CONST": 3
+  },
+  {
+    "BINOP": "+"
+  },
+  {
+    "CONST": 4
+  },
+  {
+    "BINOP": "*"
+  },
+  "WRITE",
+  {
+    "CONST": 8
+  },
+  {
+    "CONST": 3
+  },
+  {
+    "BINOP": "-"
+  },
+  {
+    "CONST": 1
+  },
+  {
+    "BINOP": "-"
+  },
+  "WRITE",
+  {
+    "CONST": 20
+  },
+  {
+    "CONST": 2
+  },
+  {
+    "BINOP": "/"
+  },
+  {
+    "CONST": 2
+  },
+  {
+    "BINOP": "/"
+  },
+  "WRITE",
+  {
+    "CONST": 1
+  },
+  {
+    "CONST": 0
+  },
+  {
+    "CONST": 0
+  },
+  {
+    "BINOP": "&&"
+  },
+  {
+    "BINOP": "!!"
+  },
+  "WRITE",
+  {
+    "CONST": 2
+  },
+  {
+    "CONST": 3
+  },
+  {
+    "BINOP": "+"
+  },
+  {
+    "CONST": 5
+  },
+  {
+    "BINOP": "=="
+  },
+  "WRITE"
+]

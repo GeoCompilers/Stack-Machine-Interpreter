@@ -1,0 +1,72 @@
+[
+  {
+    "CONST": 0
+  },
+  {
+    "ST": "i"
+  },
+  {
+    "JMP": "L_while_cond_3"
+  },
+  {
+    "LABEL": "L_while_cody_2"
+  },
+  {
+    "LD": "i"
+  },
+  {
+    "CONST": 2
+  },
+  {
+    "BINOP": "%"
+  },
+  {
+    "CONST": 0
+  },
+  {
+    "BINOP": "=="
+  },
+  {
+    "JZ": "L_else_5"
+  },
+  {
+    "LD": "i"
+  },
+  "WRITE",
+  {
+    "JMP": "L_seq_4"
+  },
+  {
+    "LABEL": "L_else_5"
+  },
+  {
+    "LABEL": "L_seq_4"
+  },
+  {
+    "LD": "i"
+  },
+  {
+    "CONST": 1
+  },
+  {
+    "BINOP": "+"
+  },
+  {
+    "ST": "i"
+  },
+  {
+    "LABEL": "L_while_cond_3"
+  },
+  {
+    "LD": "i"
+  },
+  {
+    "CONST": 5
+  },
+  {
+    "BINOP": "<"
+  },
+  {
+    "JNZ": "L_while_cody_2"
+  }
+]

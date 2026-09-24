@@ -1,0 +1,19 @@
+[
+  {
+    "CONST": 77
+  },
+  {
+    "CONST": 0
+  },
+  {
+    "JNZ": "end"
+  },
+  {
+    "CONST": 8
+  },
+  "WRITE",
+  {
+    "LABEL": "end"
+  },
+  "WRITE"
+]

@@ -1,0 +1,42 @@
+[
+  {
+    "CONST": 0
+  },
+  {
+    "ST": "x"
+  },
+  {
+    "LABEL": "L_while_cody_2"
+  },
+  {
+    "LD": "x"
+  },
+  {
+    "CONST": 1
+  },
+  {
+    "BINOP": "+"
+  },
+  {
+    "ST": "x"
+  },
+  {
+    "LD": "x"
+  },
+  "WRITE",
+  {
+    "LABEL": "L_while_cond_3"
+  },
+  {
+    "LD": "x"
+  },
+  {
+    "CONST": 3
+  },
+  {
+    "BINOP": "<"
+  },
+  {
+    "JNZ": "L_while_cody_2"
+  }
+]
