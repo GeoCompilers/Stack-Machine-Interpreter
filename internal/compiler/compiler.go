@@ -15,7 +15,9 @@ func Compile(source string) ([]byte, error) {
 		return nil, err
 	}
 	generator := generator{instructions: make([]any, 0)}
-	generator.compileBlock(program)
+	if err := generator.compileBlock(program); err != nil {
+		return nil, err
+	}
 	result, err := json.MarshalIndent(generator.instructions, "", "  ")
 	if err != nil {
 		return nil, fmt.Errorf("encode program: %w", err)

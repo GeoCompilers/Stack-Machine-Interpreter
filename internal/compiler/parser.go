@@ -98,30 +98,33 @@ func (p *parser) parseStatement() (statement, error) {
 	var err error
 	switch current.text {
 	case "read":
-		result, err = p.parseRead(true)
+		result, err = p.parseRead()
 	case "write":
-		result, err = p.parseWrite(true)
+		result, err = p.parseWrite()
 	case "while":
-		result, err = p.parseWhile()
+		return p.parseWhile()
 	case "do":
-		result, err = p.parseDo()
+		return p.parseDo()
 	case "for":
-		result, err = p.parseFor()
+		return p.parseFor()
 	case "if":
-		result, err = p.parseIf()
+		return p.parseIf()
 	case "skip":
 		p.advance()
-		p.match(";")
 		result = skipStatement{}
 	case "else", "elif":
 		return nil, fmt.Errorf("%s: %q has no matching if", current.location(), current.text)
 	default:
-		result, err = p.parseAssignment(true)
+		result, err = p.parseAssignment()
 	}
-	return result, err
+	if err != nil {
+		return nil, err
+	}
+	p.match(";")
+	return result, nil
 }
 
-func (p *parser) parseRead(semicolon bool) (statement, error) {
+func (p *parser) parseRead() (statement, error) {
 	p.advance()
 	if _, err := p.expect("("); err != nil {
 		return nil, err
@@ -133,13 +136,10 @@ func (p *parser) parseRead(semicolon bool) (statement, error) {
 	if _, err := p.expect(")"); err != nil {
 		return nil, err
 	}
-	if semicolon {
-		p.match(";")
-	}
 	return readStatement{name: name.text}, nil
 }
 
-func (p *parser) parseWrite(semicolon bool) (statement, error) {
+func (p *parser) parseWrite() (statement, error) {
 	p.advance()
 	if _, err := p.expect("("); err != nil {
 		return nil, err
@@ -151,13 +151,10 @@ func (p *parser) parseWrite(semicolon bool) (statement, error) {
 	if _, err := p.expect(")"); err != nil {
 		return nil, err
 	}
-	if semicolon {
-		p.match(";")
-	}
 	return writeStatement{value: value}, nil
 }
 
-func (p *parser) parseAssignment(semicolon bool) (statement, error) {
+func (p *parser) parseAssignment() (statement, error) {
 	name, err := p.expectIdentifier()
 	if err != nil {
 		return nil, err
@@ -165,7 +162,7 @@ func (p *parser) parseAssignment(semicolon bool) (statement, error) {
 	operator := ""
 	if !p.match("=") {
 		current := p.current()
-		if precedence(current.text) == 0 {
+		if binaryOperator(current.text).precedence == 0 {
 			return nil, fmt.Errorf("%s: expected assignment operator after %q", current.location(), name.text)
 		}
 		operator = current.text
@@ -177,9 +174,6 @@ func (p *parser) parseAssignment(semicolon bool) (statement, error) {
 	value, err := p.parseExpression(1)
 	if err != nil {
 		return nil, err
-	}
-	if semicolon {
-		p.match(";")
 	}
 	return assignmentStatement{name: name.text, operator: operator, value: value}, nil
 }
@@ -219,11 +213,8 @@ func (p *parser) parseFor() (statement, error) {
 	if _, err := p.expect("("); err != nil {
 		return nil, err
 	}
-	initial, err := p.parseForClause()
+	initial, err := p.parseStatement()
 	if err != nil {
-		return nil, err
-	}
-	if _, err := p.expect(";"); err != nil {
 		return nil, err
 	}
 	condition, err := p.parseExpression(1)
@@ -233,7 +224,7 @@ func (p *parser) parseFor() (statement, error) {
 	if _, err := p.expect(";"); err != nil {
 		return nil, err
 	}
-	post, err := p.parseForClause()
+	post, err := p.parseStatement()
 	if err != nil {
 		return nil, err
 	}
@@ -245,20 +236,6 @@ func (p *parser) parseFor() (statement, error) {
 		return nil, err
 	}
 	return forStatement{initial: initial, condition: condition, post: post, body: body}, nil
-}
-
-func (p *parser) parseForClause() (statement, error) {
-	switch p.current().text {
-	case "read":
-		return p.parseRead(false)
-	case "write":
-		return p.parseWrite(false)
-	case "skip":
-		p.advance()
-		return skipStatement{}, nil
-	default:
-		return p.parseAssignment(false)
-	}
 }
 
 func (p *parser) parseIf() (statement, error) {
@@ -319,18 +296,28 @@ func (p *parser) parseExpression(minimumPrecedence int) (expression, error) {
 	if err != nil {
 		return nil, err
 	}
+	nonAssociativeLevel := 0
 	for {
-		operator := p.current().text
-		level := precedence(operator)
+		current := p.current()
+		operator := binaryOperator(current.text)
+		level := operator.precedence
 		if level < minimumPrecedence {
 			break
+		}
+		if level == nonAssociativeLevel {
+			return nil, fmt.Errorf("%s: comparison %q requires parentheses after another comparison", current.location(), current.text)
 		}
 		p.advance()
 		right, err := p.parseExpression(level + 1)
 		if err != nil {
 			return nil, err
 		}
-		left = binaryExpression{operator: operator, left: left, right: right}
+		left = binaryExpression{operator: current.text, left: left, right: right}
+		if operator.associativity == nonAssociative {
+			nonAssociativeLevel = level
+		} else {
+			nonAssociativeLevel = 0
+		}
 	}
 	return left, nil
 }
@@ -378,22 +365,32 @@ func parseLiteral(token token, negative bool) (expression, error) {
 	return literalExpression{value: int32(value)}, nil
 }
 
-func precedence(operator string) int {
+type associativity uint8
+
+const (
+	leftAssociative associativity = iota
+	nonAssociative
+)
+
+type operatorInfo struct {
+	precedence    int
+	associativity associativity
+}
+
+func binaryOperator(operator string) operatorInfo {
 	switch operator {
 	case "!!":
-		return 1
+		return operatorInfo{precedence: 1}
 	case "&&":
-		return 2
-	case "==", "!=":
-		return 3
-	case "<", "<=", ">", ">=":
-		return 4
+		return operatorInfo{precedence: 2}
+	case "==", "!=", "<", "<=", ">", ">=":
+		return operatorInfo{precedence: 3, associativity: nonAssociative}
 	case "+", "-":
-		return 5
+		return operatorInfo{precedence: 4}
 	case "*", "/", "%":
-		return 6
+		return operatorInfo{precedence: 5}
 	default:
-		return 0
+		return operatorInfo{}
 	}
 }
 
