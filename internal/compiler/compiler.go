@@ -15,8 +15,13 @@ func Compile(source string) ([]byte, error) {
 		return nil, err
 	}
 	generator := generator{instructions: make([]any, 0)}
-	if err := generator.compileBlock(program); err != nil {
+	endLabel := generator.label("end")
+	used, err := generator.compileBlock(program, endLabel)
+	if err != nil {
 		return nil, err
+	}
+	if used {
+		generator.emitString("LABEL", endLabel)
 	}
 	result, err := json.MarshalIndent(generator.instructions, "", "  ")
 	if err != nil {

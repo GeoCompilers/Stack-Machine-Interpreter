@@ -41,7 +41,7 @@ func TestGeneratorRejectsUnknownStatements(t *testing.T) {
 	for _, test := range cases {
 		t.Run(test.name, func(t *testing.T) {
 			var generator generator
-			err := generator.compileStatement(test.node)
+			_, err := generator.compileStatement(test.node, "exit")
 			if err == nil || !strings.Contains(err.Error(), "internal compiler error") || !strings.Contains(err.Error(), test.want) {
 				t.Fatalf("expected internal error naming %q, got %v", test.want, err)
 			}
@@ -67,6 +67,59 @@ func TestGeneratorRejectsUnknownExpressions(t *testing.T) {
 			err := generator.compileExpression(test.node)
 			if err == nil || !strings.Contains(err.Error(), "internal compiler error: unsupported expression "+test.want) {
 				t.Fatalf("expected internal error naming %q, got %v", test.want, err)
+			}
+		})
+	}
+}
+
+func TestGeneratorReportsExitLabelUsage(t *testing.T) {
+	literal := literalExpression{value: 1}
+	skip := skipStatement{}
+	conditional := ifStatement{condition: literal, then: skip}
+	cases := []struct {
+		name string
+		node statement
+		want bool
+	}{
+		{"read", readStatement{name: "x"}, false},
+		{"write", writeStatement{value: literal}, false},
+		{"assignment", assignmentStatement{name: "x", value: literal}, false},
+		{"skip", skip, false},
+		{"empty_block", blockStatement{}, false},
+		{"plain_block", blockStatement{statements: []statement{skip, skip}}, false},
+		{"if_without_else", conditional, true},
+		{"if_with_else", ifStatement{condition: literal, then: conditional, otherwise: skip}, true},
+		{"last_if", blockStatement{statements: []statement{skip, conditional}}, true},
+		{"nonfinal_if", blockStatement{statements: []statement{conditional, skip}}, false},
+		{"nested_block", blockStatement{statements: []statement{skip, blockStatement{statements: []statement{conditional}}}}, true},
+		{"nested_nonfinal_block", blockStatement{statements: []statement{blockStatement{statements: []statement{conditional}}, skip}}, false},
+		{"while", whileStatement{condition: literal, body: conditional}, false},
+		{"do", doStatement{condition: literal, body: conditional}, false},
+		{"for", forStatement{initial: conditional, condition: literal, body: conditional, post: conditional}, false},
+	}
+	for _, test := range cases {
+		t.Run(test.name, func(t *testing.T) {
+			var generator generator
+			used, err := generator.compileStatement(test.node, "exit")
+			if err != nil {
+				t.Fatal(err)
+			}
+			if used != test.want {
+				t.Fatalf("used=%v, want %v", used, test.want)
+			}
+			referenced := false
+			for _, instruction := range generator.instructions {
+				if operands, ok := instruction.(map[string]string); ok {
+					if operands["LABEL"] == "exit" {
+						t.Fatal("statement declared caller-owned exit label")
+					}
+					for _, opcode := range []string{"JMP", "JZ", "JNZ"} {
+						referenced = referenced || operands[opcode] == "exit"
+					}
+				}
+			}
+			if used != referenced {
+				t.Fatalf("used=%v, actual exit reference=%v", used, referenced)
 			}
 		})
 	}

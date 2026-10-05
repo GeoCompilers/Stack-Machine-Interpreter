@@ -25,23 +25,31 @@ func (g *generator) label(prefix string) string {
 	return label
 }
 
-func (g *generator) compileBlock(block blockStatement) error {
-	for _, statement := range block.statements {
-		if err := g.compileStatement(statement); err != nil {
-			return err
+func (g *generator) compileBlock(block blockStatement, exitLabel string) (bool, error) {
+	for index, statement := range block.statements {
+		if index == len(block.statements)-1 {
+			return g.compileStatement(statement, exitLabel)
+		}
+		nextLabel := g.label("next")
+		used, err := g.compileStatement(statement, nextLabel)
+		if err != nil {
+			return false, err
+		}
+		if used {
+			g.emitString("LABEL", nextLabel)
 		}
 	}
-	return nil
+	return false, nil
 }
 
-func (g *generator) compileStatement(node statement) error {
+func (g *generator) compileStatement(node statement, exitLabel string) (bool, error) {
 	switch value := node.(type) {
 	case readStatement:
 		g.emit("READ")
 		g.emitString("ST", value.name)
 	case writeStatement:
 		if err := g.compileExpression(value.value); err != nil {
-			return err
+			return false, err
 		}
 		g.emit("WRITE")
 	case assignmentStatement:
@@ -49,51 +57,49 @@ func (g *generator) compileStatement(node statement) error {
 			g.emitString("LD", value.name)
 		}
 		if err := g.compileExpression(value.value); err != nil {
-			return err
+			return false, err
 		}
 		if value.operator != "" {
 			g.emitString("BINOP", value.operator)
 		}
 		g.emitString("ST", value.name)
 	case whileStatement:
-		return g.compileWhile(value.condition, value.body)
+		return false, g.compileLoop(value.condition, value.body, true)
 	case doStatement:
-		bodyLabel := g.label("while_body")
-		conditionLabel := g.label("while_cond")
-		g.emitString("LABEL", bodyLabel)
-		if err := g.compileStatement(value.body); err != nil {
-			return err
-		}
-		g.emitString("LABEL", conditionLabel)
-		if err := g.compileExpression(value.condition); err != nil {
-			return err
-		}
-		g.emitString("JNZ", bodyLabel)
+		return false, g.compileLoop(value.condition, value.body, false)
 	case forStatement:
-		if err := g.compileStatement(value.initial); err != nil {
-			return err
-		}
-		return g.compileWhile(value.condition, blockStatement{statements: []statement{value.body, value.post}})
+		return g.compileBlock(blockStatement{statements: []statement{
+			value.initial,
+			whileStatement{
+				condition: value.condition,
+				body:      blockStatement{statements: []statement{value.body, value.post}},
+			},
+		}}, exitLabel)
 	case ifStatement:
-		return g.compileIf(value)
+		return g.compileIf(value, exitLabel)
 	case blockStatement:
-		return g.compileBlock(value)
+		return g.compileBlock(value, exitLabel)
 	case skipStatement:
 	default:
-		return fmt.Errorf("internal compiler error: unsupported statement %T", node)
+		return false, fmt.Errorf("internal compiler error: unsupported statement %T", node)
 	}
-	return nil
+	return false, nil
 }
 
-func (g *generator) compileWhile(condition expression, body statement) error {
+func (g *generator) compileLoop(condition expression, body statement, checkFirst bool) error {
 	bodyLabel := g.label("while_body")
 	conditionLabel := g.label("while_cond")
-	g.emitString("JMP", conditionLabel)
+	if checkFirst {
+		g.emitString("JMP", conditionLabel)
+	}
 	g.emitString("LABEL", bodyLabel)
-	if err := g.compileStatement(body); err != nil {
+	used, err := g.compileStatement(body, conditionLabel)
+	if err != nil {
 		return err
 	}
-	g.emitString("LABEL", conditionLabel)
+	if checkFirst || used {
+		g.emitString("LABEL", conditionLabel)
+	}
 	if err := g.compileExpression(condition); err != nil {
 		return err
 	}
@@ -101,25 +107,28 @@ func (g *generator) compileWhile(condition expression, body statement) error {
 	return nil
 }
 
-func (g *generator) compileIf(value ifStatement) error {
-	elseLabel := g.label("else")
-	endLabel := g.label("end")
+func (g *generator) compileIf(value ifStatement, exitLabel string) (bool, error) {
 	if err := g.compileExpression(value.condition); err != nil {
-		return err
+		return false, err
 	}
-	g.emitString("JZ", elseLabel)
-	if err := g.compileStatement(value.then); err != nil {
-		return err
-	}
-	g.emitString("JMP", endLabel)
-	g.emitString("LABEL", elseLabel)
-	if value.otherwise != nil {
-		if err := g.compileStatement(value.otherwise); err != nil {
-			return err
+	if value.otherwise == nil {
+		g.emitString("JZ", exitLabel)
+		if _, err := g.compileStatement(value.then, exitLabel); err != nil {
+			return false, err
 		}
+		return true, nil
 	}
-	g.emitString("LABEL", endLabel)
-	return nil
+	elseLabel := g.label("else")
+	g.emitString("JZ", elseLabel)
+	if _, err := g.compileStatement(value.then, exitLabel); err != nil {
+		return false, err
+	}
+	g.emitString("JMP", exitLabel)
+	g.emitString("LABEL", elseLabel)
+	if _, err := g.compileStatement(value.otherwise, exitLabel); err != nil {
+		return false, err
+	}
+	return true, nil
 }
 
 func (g *generator) compileExpression(node expression) error {
