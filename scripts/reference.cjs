@@ -60,6 +60,17 @@ function main() {
       'compiled.json differs from L0.js; inspect before running --update');
   }
   console.log(`${compiled.length} source cases checked against both eval.html and sm.html (${mode}).`);
+  const syntax = JSON.parse(fs.readFileSync(path.join(root, 'tests/testdata/compiler_syntax.json'), 'utf8'));
+  for (const test of syntax) {
+    for (const referenceMode of ['eval', 'sm']) {
+      const result = run(referenceMode, test.source, '0');
+      assert.equal(result.error === '', test.valid, `${test.name}: ${referenceMode} acceptance: ${result.error}`);
+      if (test.valid) {
+        assert.equal(normalize(result.output), test.output, `${test.name}: ${referenceMode} output`);
+      }
+    }
+  }
+  console.log(`${syntax.length} compiler syntax cases checked against both eval.html and sm.html.`);
 }
 
 try { main(); } catch (error) { console.error(error); process.exitCode = 1; }

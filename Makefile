@@ -2,13 +2,14 @@ GO ?= go
 NODE ?= node
 GOFLAGS ?=
 
-.PHONY: help test test-cases test-reference build
+.PHONY: help test test-cases test-reference build build-compiler
 
 help:
 	@echo make test           - build and test the Go interpreter
 	@echo make test-cases     - validate the checked-in test fixtures
 	@echo make test-reference - compare fixtures with the original L0.js
 	@echo make build          - build main.exe from ./cmd/sm
+	@echo make build-compiler - build compiler.exe from ./cmd/compiler
 
 test:
 	$(GO) test $(GOFLAGS) -count=1 -timeout=120s ./...
@@ -22,3 +23,6 @@ test-reference:
 
 build:
 	$(GO) build $(GOFLAGS) -o main.exe ./cmd/sm
+
+build-compiler:
+	$(GO) build $(GOFLAGS) -o compiler.exe ./cmd/compiler
