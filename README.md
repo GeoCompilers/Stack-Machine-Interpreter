@@ -26,3 +26,15 @@ main.exe --help
 `code.json` — массив инструкций, `input.txt` — целые числа через запятую или пустой файл. Оба пути обязательны.
 
 Тесты: `make test`.
+
+## AST-интерпретатор
+
+```sh
+make build-interpreter
+./interpreter.exe -code program.json -input input.txt
+```
+
+`program.json` — JSON AST из поля **JSON representation** на странице
+[интерпретатора](https://dboulytchev.github.io/eval.html), `input.txt` — значения
+через запятую или пустой файл. Для записи результата в файл добавьте
+`-output result.txt`; без этого результат выводится в терминал.
