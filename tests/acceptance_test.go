@@ -66,7 +66,6 @@ func loadCases(t *testing.T) []testCase {
 	return all
 }
 
-// This target is useful before an interpreter exists. It checks fixtures only.
 func TestFixtures(t *testing.T) {
 	names := map[string]bool{}
 	validName := regexp.MustCompile(`^[a-z][a-z0-9_]*$`)
@@ -185,7 +184,6 @@ func validateProgram(data []byte) error {
 func interpreter(t *testing.T) string {
 	t.Helper()
 	if configured := os.Getenv("SM_BIN"); configured != "" {
-		// Relative paths are resolved from the repository root, not ./tests.
 		if !filepath.IsAbs(configured) {
 			configured = filepath.Join("..", configured)
 		}
@@ -226,7 +224,6 @@ func TestInterpreter(t *testing.T) {
 
 func runCase(t *testing.T, binary string, tc testCase, style string) {
 	t.Helper()
-	// Include spaces to catch implementations that split or mishandle paths.
 	directory := filepath.Join(t.TempDir(), "files with spaces")
 	if err := os.Mkdir(directory, 0700); err != nil {
 		t.Fatal(err)

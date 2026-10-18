@@ -1,0 +1,5794 @@
+{
+  "reference": {
+    "url": "https://dboulytchev.github.io/eval.html",
+    "bundle_url": "https://dboulytchev.github.io/L0.js",
+    "sha256": "6ca82c79572205be232413a9d310067736ba7cb835a4cf382261b9f0a9347343"
+  },
+  "cases": [
+    {
+      "name": "source_skip",
+      "source": "{skip;}",
+      "program": "skip",
+      "input": "0",
+      "output": "",
+      "message": ""
+    },
+    {
+      "name": "source_constant",
+      "source": "{write(42);}",
+      "program": {
+        "write": {
+          "const": 42
+        }
+      },
+      "input": "0",
+      "output": "42",
+      "message": ""
+    },
+    {
+      "name": "source_input_order",
+      "source": "{read(a); read(b); read(c); write(a); write(b); write(c);}",
+      "program": {
+        "seq": {
+          "left": {
+            "read": "a"
+          },
+          "right": {
+            "seq": {
+              "left": {
+                "read": "b"
+              },
+              "right": {
+                "seq": {
+                  "left": {
+                    "read": "c"
+                  },
+                  "right": {
+                    "seq": {
+                      "left": {
+                        "write": {
+                          "var": "a"
+                        }
+                      },
+                      "right": {
+                        "seq": {
+                          "left": {
+                            "write": {
+                              "var": "b"
+                            }
+                          },
+                          "right": {
+                            "write": {
+                              "var": "c"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "input": " 8, -3, 0 ",
+      "output": "8; -3; 0",
+      "message": ""
+    },
+    {
+      "name": "source_read_overwrites",
+      "source": "{read(x); write(x); read(x); write(x);}",
+      "program": {
+        "seq": {
+          "left": {
+            "read": "x"
+          },
+          "right": {
+            "seq": {
+              "left": {
+                "write": {
+                  "var": "x"
+                }
+              },
+              "right": {
+                "seq": {
+                  "left": {
+                    "read": "x"
+                  },
+                  "right": {
+                    "write": {
+                      "var": "x"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "input": "11,22",
+      "output": "11; 22",
+      "message": ""
+    },
+    {
+      "name": "source_unused_input",
+      "source": "{read(x); write(x);}",
+      "program": {
+        "seq": {
+          "left": {
+            "read": "x"
+          },
+          "right": {
+            "write": {
+              "var": "x"
+            }
+          }
+        }
+      },
+      "input": "7,8,9",
+      "output": "7",
+      "message": ""
+    },
+    {
+      "name": "source_assignment_copy",
+      "source": "{x=4; y=x; x=9; write(y); write(x);}",
+      "program": {
+        "seq": {
+          "left": {
+            "assn": {
+              "dst": "x",
+              "src": {
+                "const": 4
+              }
+            }
+          },
+          "right": {
+            "seq": {
+              "left": {
+                "assn": {
+                  "dst": "y",
+                  "src": {
+                    "var": "x"
+                  }
+                }
+              },
+              "right": {
+                "seq": {
+                  "left": {
+                    "assn": {
+                      "dst": "x",
+                      "src": {
+                        "const": 9
+                      }
+                    }
+                  },
+                  "right": {
+                    "seq": {
+                      "left": {
+                        "write": {
+                          "var": "y"
+                        }
+                      },
+                      "right": {
+                        "write": {
+                          "var": "x"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "input": "0",
+      "output": "4; 9",
+      "message": ""
+    },
+    {
+      "name": "source_arithmetic",
+      "source": "{write(7+3); write(7-3); write(7*3); write(7/3); write(7%3);}",
+      "program": {
+        "seq": {
+          "left": {
+            "write": {
+              "binop": "+",
+              "left": {
+                "const": 7
+              },
+              "right": {
+                "const": 3
+              }
+            }
+          },
+          "right": {
+            "seq": {
+              "left": {
+                "write": {
+                  "binop": "-",
+                  "left": {
+                    "const": 7
+                  },
+                  "right": {
+                    "const": 3
+                  }
+                }
+              },
+              "right": {
+                "seq": {
+                  "left": {
+                    "write": {
+                      "binop": "*",
+                      "left": {
+                        "const": 7
+                      },
+                      "right": {
+                        "const": 3
+                      }
+                    }
+                  },
+                  "right": {
+                    "seq": {
+                      "left": {
+                        "write": {
+                          "binop": "/",
+                          "left": {
+                            "const": 7
+                          },
+                          "right": {
+                            "const": 3
+                          }
+                        }
+                      },
+                      "right": {
+                        "write": {
+                          "binop": "%",
+                          "left": {
+                            "const": 7
+                          },
+                          "right": {
+                            "const": 3
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "input": "0",
+      "output": "10; 4; 21; 2; 1",
+      "message": ""
+    },
+    {
+      "name": "source_signed_arithmetic",
+      "source": "{write(-7/3); write(7/-3); write(-7/-3); write(-7%3); write(7%-3); write(-7%-3);}",
+      "program": {
+        "seq": {
+          "left": {
+            "write": {
+              "binop": "/",
+              "left": {
+                "const": -7
+              },
+              "right": {
+                "const": 3
+              }
+            }
+          },
+          "right": {
+            "seq": {
+              "left": {
+                "write": {
+                  "binop": "/",
+                  "left": {
+                    "const": 7
+                  },
+                  "right": {
+                    "const": -3
+                  }
+                }
+              },
+              "right": {
+                "seq": {
+                  "left": {
+                    "write": {
+                      "binop": "/",
+                      "left": {
+                        "const": -7
+                      },
+                      "right": {
+                        "const": -3
+                      }
+                    }
+                  },
+                  "right": {
+                    "seq": {
+                      "left": {
+                        "write": {
+                          "binop": "%",
+                          "left": {
+                            "const": -7
+                          },
+                          "right": {
+                            "const": 3
+                          }
+                        }
+                      },
+                      "right": {
+                        "seq": {
+                          "left": {
+                            "write": {
+                              "binop": "%",
+                              "left": {
+                                "const": 7
+                              },
+                              "right": {
+                                "const": -3
+                              }
+                            }
+                          },
+                          "right": {
+                            "write": {
+                              "binop": "%",
+                              "left": {
+                                "const": -7
+                              },
+                              "right": {
+                                "const": -3
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "input": "0",
+      "output": "-2; -2; 2; -1; 1; -1",
+      "message": ""
+    },
+    {
+      "name": "source_precedence",
+      "source": "{write(2+3*4); write((2+3)*4); write(8-3-1); write(20/2/2); write(1 !! 0 && 0); write(2+3 == 5);}",
+      "program": {
+        "seq": {
+          "left": {
+            "write": {
+              "binop": "+",
+              "left": {
+                "const": 2
+              },
+              "right": {
+                "binop": "*",
+                "left": {
+                  "const": 3
+                },
+                "right": {
+                  "const": 4
+                }
+              }
+            }
+          },
+          "right": {
+            "seq": {
+              "left": {
+                "write": {
+                  "binop": "*",
+                  "left": {
+                    "binop": "+",
+                    "left": {
+                      "const": 2
+                    },
+                    "right": {
+                      "const": 3
+                    }
+                  },
+                  "right": {
+                    "const": 4
+                  }
+                }
+              },
+              "right": {
+                "seq": {
+                  "left": {
+                    "write": {
+                      "binop": "-",
+                      "left": {
+                        "binop": "-",
+                        "left": {
+                          "const": 8
+                        },
+                        "right": {
+                          "const": 3
+                        }
+                      },
+                      "right": {
+                        "const": 1
+                      }
+                    }
+                  },
+                  "right": {
+                    "seq": {
+                      "left": {
+                        "write": {
+                          "binop": "/",
+                          "left": {
+                            "binop": "/",
+                            "left": {
+                              "const": 20
+                            },
+                            "right": {
+                              "const": 2
+                            }
+                          },
+                          "right": {
+                            "const": 2
+                          }
+                        }
+                      },
+                      "right": {
+                        "seq": {
+                          "left": {
+                            "write": {
+                              "binop": "!!",
+                              "left": {
+                                "const": 1
+                              },
+                              "right": {
+                                "binop": "&&",
+                                "left": {
+                                  "const": 0
+                                },
+                                "right": {
+                                  "const": 0
+                                }
+                              }
+                            }
+                          },
+                          "right": {
+                            "write": {
+                              "binop": "==",
+                              "left": {
+                                "binop": "+",
+                                "left": {
+                                  "const": 2
+                                },
+                                "right": {
+                                  "const": 3
+                                }
+                              },
+                              "right": {
+                                "const": 5
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "input": "0",
+      "output": "14; 20; 4; 5; 1; 1",
+      "message": ""
+    },
+    {
+      "name": "source_comparisons",
+      "source": "{write(2==2); write(2==3); write(2!=3); write(2!=2); write(2<3); write(2<2); write(2<=2); write(3<=2); write(3>2); write(2>2); write(2>=2); write(2>=3);}",
+      "program": {
+        "seq": {
+          "left": {
+            "write": {
+              "binop": "==",
+              "left": {
+                "const": 2
+              },
+              "right": {
+                "const": 2
+              }
+            }
+          },
+          "right": {
+            "seq": {
+              "left": {
+                "write": {
+                  "binop": "==",
+                  "left": {
+                    "const": 2
+                  },
+                  "right": {
+                    "const": 3
+                  }
+                }
+              },
+              "right": {
+                "seq": {
+                  "left": {
+                    "write": {
+                      "binop": "!=",
+                      "left": {
+                        "const": 2
+                      },
+                      "right": {
+                        "const": 3
+                      }
+                    }
+                  },
+                  "right": {
+                    "seq": {
+                      "left": {
+                        "write": {
+                          "binop": "!=",
+                          "left": {
+                            "const": 2
+                          },
+                          "right": {
+                            "const": 2
+                          }
+                        }
+                      },
+                      "right": {
+                        "seq": {
+                          "left": {
+                            "write": {
+                              "binop": "<",
+                              "left": {
+                                "const": 2
+                              },
+                              "right": {
+                                "const": 3
+                              }
+                            }
+                          },
+                          "right": {
+                            "seq": {
+                              "left": {
+                                "write": {
+                                  "binop": "<",
+                                  "left": {
+                                    "const": 2
+                                  },
+                                  "right": {
+                                    "const": 2
+                                  }
+                                }
+                              },
+                              "right": {
+                                "seq": {
+                                  "left": {
+                                    "write": {
+                                      "binop": "<=",
+                                      "left": {
+                                        "const": 2
+                                      },
+                                      "right": {
+                                        "const": 2
+                                      }
+                                    }
+                                  },
+                                  "right": {
+                                    "seq": {
+                                      "left": {
+                                        "write": {
+                                          "binop": "<=",
+                                          "left": {
+                                            "const": 3
+                                          },
+                                          "right": {
+                                            "const": 2
+                                          }
+                                        }
+                                      },
+                                      "right": {
+                                        "seq": {
+                                          "left": {
+                                            "write": {
+                                              "binop": ">",
+                                              "left": {
+                                                "const": 3
+                                              },
+                                              "right": {
+                                                "const": 2
+                                              }
+                                            }
+                                          },
+                                          "right": {
+                                            "seq": {
+                                              "left": {
+                                                "write": {
+                                                  "binop": ">",
+                                                  "left": {
+                                                    "const": 2
+                                                  },
+                                                  "right": {
+                                                    "const": 2
+                                                  }
+                                                }
+                                              },
+                                              "right": {
+                                                "seq": {
+                                                  "left": {
+                                                    "write": {
+                                                      "binop": ">=",
+                                                      "left": {
+                                                        "const": 2
+                                                      },
+                                                      "right": {
+                                                        "const": 2
+                                                      }
+                                                    }
+                                                  },
+                                                  "right": {
+                                                    "write": {
+                                                      "binop": ">=",
+                                                      "left": {
+                                                        "const": 2
+                                                      },
+                                                      "right": {
+                                                        "const": 3
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "input": "0",
+      "output": "1; 0; 1; 0; 1; 0; 1; 0; 1; 0; 1; 0",
+      "message": ""
+    },
+    {
+      "name": "source_logic_truth_table",
+      "source": "{write(0&&0); write(0&&7); write(-2&&0); write(-2&&7); write(0!!0); write(0!!7); write(-2!!0); write(-2!!7);}",
+      "program": {
+        "seq": {
+          "left": {
+            "write": {
+              "binop": "&&",
+              "left": {
+                "const": 0
+              },
+              "right": {
+                "const": 0
+              }
+            }
+          },
+          "right": {
+            "seq": {
+              "left": {
+                "write": {
+                  "binop": "&&",
+                  "left": {
+                    "const": 0
+                  },
+                  "right": {
+                    "const": 7
+                  }
+                }
+              },
+              "right": {
+                "seq": {
+                  "left": {
+                    "write": {
+                      "binop": "&&",
+                      "left": {
+                        "const": -2
+                      },
+                      "right": {
+                        "const": 0
+                      }
+                    }
+                  },
+                  "right": {
+                    "seq": {
+                      "left": {
+                        "write": {
+                          "binop": "&&",
+                          "left": {
+                            "const": -2
+                          },
+                          "right": {
+                            "const": 7
+                          }
+                        }
+                      },
+                      "right": {
+                        "seq": {
+                          "left": {
+                            "write": {
+                              "binop": "!!",
+                              "left": {
+                                "const": 0
+                              },
+                              "right": {
+                                "const": 0
+                              }
+                            }
+                          },
+                          "right": {
+                            "seq": {
+                              "left": {
+                                "write": {
+                                  "binop": "!!",
+                                  "left": {
+                                    "const": 0
+                                  },
+                                  "right": {
+                                    "const": 7
+                                  }
+                                }
+                              },
+                              "right": {
+                                "seq": {
+                                  "left": {
+                                    "write": {
+                                      "binop": "!!",
+                                      "left": {
+                                        "const": -2
+                                      },
+                                      "right": {
+                                        "const": 0
+                                      }
+                                    }
+                                  },
+                                  "right": {
+                                    "write": {
+                                      "binop": "!!",
+                                      "left": {
+                                        "const": -2
+                                      },
+                                      "right": {
+                                        "const": 7
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "input": "0",
+      "output": "0; 0; 0; 1; 0; 1; 1; 1",
+      "message": ""
+    },
+    {
+      "name": "source_compound_arithmetic",
+      "source": "{x=10; x+=5; write(x); x-=3; write(x); x*=2; write(x); x/=5; write(x); x%=3; write(x);}",
+      "program": {
+        "seq": {
+          "left": {
+            "assn": {
+              "dst": "x",
+              "src": {
+                "const": 10
+              }
+            }
+          },
+          "right": {
+            "seq": {
+              "left": {
+                "assn": {
+                  "dst": "x",
+                  "src": {
+                    "binop": "+",
+                    "left": {
+                      "var": "x"
+                    },
+                    "right": {
+                      "const": 5
+                    }
+                  }
+                }
+              },
+              "right": {
+                "seq": {
+                  "left": {
+                    "write": {
+                      "var": "x"
+                    }
+                  },
+                  "right": {
+                    "seq": {
+                      "left": {
+                        "assn": {
+                          "dst": "x",
+                          "src": {
+                            "binop": "-",
+                            "left": {
+                              "var": "x"
+                            },
+                            "right": {
+                              "const": 3
+                            }
+                          }
+                        }
+                      },
+                      "right": {
+                        "seq": {
+                          "left": {
+                            "write": {
+                              "var": "x"
+                            }
+                          },
+                          "right": {
+                            "seq": {
+                              "left": {
+                                "assn": {
+                                  "dst": "x",
+                                  "src": {
+                                    "binop": "*",
+                                    "left": {
+                                      "var": "x"
+                                    },
+                                    "right": {
+                                      "const": 2
+                                    }
+                                  }
+                                }
+                              },
+                              "right": {
+                                "seq": {
+                                  "left": {
+                                    "write": {
+                                      "var": "x"
+                                    }
+                                  },
+                                  "right": {
+                                    "seq": {
+                                      "left": {
+                                        "assn": {
+                                          "dst": "x",
+                                          "src": {
+                                            "binop": "/",
+                                            "left": {
+                                              "var": "x"
+                                            },
+                                            "right": {
+                                              "const": 5
+                                            }
+                                          }
+                                        }
+                                      },
+                                      "right": {
+                                        "seq": {
+                                          "left": {
+                                            "write": {
+                                              "var": "x"
+                                            }
+                                          },
+                                          "right": {
+                                            "seq": {
+                                              "left": {
+                                                "assn": {
+                                                  "dst": "x",
+                                                  "src": {
+                                                    "binop": "%",
+                                                    "left": {
+                                                      "var": "x"
+                                                    },
+                                                    "right": {
+                                                      "const": 3
+                                                    }
+                                                  }
+                                                }
+                                              },
+                                              "right": {
+                                                "write": {
+                                                  "var": "x"
+                                                }
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "input": "0",
+      "output": "15; 12; 24; 4; 1",
+      "message": ""
+    },
+    {
+      "name": "source_compound_comparison_logic",
+      "source": "{x=2; x<= =3; write(x); x&&=5; write(x); x!!=0; write(x);}",
+      "program": {
+        "seq": {
+          "left": {
+            "assn": {
+              "dst": "x",
+              "src": {
+                "const": 2
+              }
+            }
+          },
+          "right": {
+            "seq": {
+              "left": {
+                "assn": {
+                  "dst": "x",
+                  "src": {
+                    "binop": "<=",
+                    "left": {
+                      "var": "x"
+                    },
+                    "right": {
+                      "const": 3
+                    }
+                  }
+                }
+              },
+              "right": {
+                "seq": {
+                  "left": {
+                    "write": {
+                      "var": "x"
+                    }
+                  },
+                  "right": {
+                    "seq": {
+                      "left": {
+                        "assn": {
+                          "dst": "x",
+                          "src": {
+                            "binop": "&&",
+                            "left": {
+                              "var": "x"
+                            },
+                            "right": {
+                              "const": 5
+                            }
+                          }
+                        }
+                      },
+                      "right": {
+                        "seq": {
+                          "left": {
+                            "write": {
+                              "var": "x"
+                            }
+                          },
+                          "right": {
+                            "seq": {
+                              "left": {
+                                "assn": {
+                                  "dst": "x",
+                                  "src": {
+                                    "binop": "!!",
+                                    "left": {
+                                      "var": "x"
+                                    },
+                                    "right": {
+                                      "const": 0
+                                    }
+                                  }
+                                }
+                              },
+                              "right": {
+                                "write": {
+                                  "var": "x"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "input": "0",
+      "output": "1; 1; 1",
+      "message": ""
+    },
+    {
+      "name": "source_if_true",
+      "source": "{if(5)write(1); else write(2); write(3);}",
+      "program": {
+        "seq": {
+          "left": {
+            "if": {
+              "cond": {
+                "const": 5
+              },
+              "then": {
+                "write": {
+                  "const": 1
+                }
+              },
+              "else": {
+                "write": {
+                  "const": 2
+                }
+              }
+            }
+          },
+          "right": {
+            "write": {
+              "const": 3
+            }
+          }
+        }
+      },
+      "input": "0",
+      "output": "1; 3",
+      "message": ""
+    },
+    {
+      "name": "source_if_false",
+      "source": "{if(0)write(1); else write(2); write(3);}",
+      "program": {
+        "seq": {
+          "left": {
+            "if": {
+              "cond": {
+                "const": 0
+              },
+              "then": {
+                "write": {
+                  "const": 1
+                }
+              },
+              "else": {
+                "write": {
+                  "const": 2
+                }
+              }
+            }
+          },
+          "right": {
+            "write": {
+              "const": 3
+            }
+          }
+        }
+      },
+      "input": "0",
+      "output": "2; 3",
+      "message": ""
+    },
+    {
+      "name": "source_if_without_else",
+      "source": "{if(0)write(99); if(-2)write(7); write(8);}",
+      "program": {
+        "seq": {
+          "left": {
+            "if": {
+              "cond": {
+                "const": 0
+              },
+              "then": {
+                "write": {
+                  "const": 99
+                }
+              },
+              "else": "skip"
+            }
+          },
+          "right": {
+            "seq": {
+              "left": {
+                "if": {
+                  "cond": {
+                    "const": -2
+                  },
+                  "then": {
+                    "write": {
+                      "const": 7
+                    }
+                  },
+                  "else": "skip"
+                }
+              },
+              "right": {
+                "write": {
+                  "const": 8
+                }
+              }
+            }
+          }
+        }
+      },
+      "input": "0",
+      "output": "7; 8",
+      "message": ""
+    },
+    {
+      "name": "source_elif_first",
+      "source": "{read(x); if(x<0)write(1); elif(x==0)write(2); else write(3);}",
+      "program": {
+        "seq": {
+          "left": {
+            "read": "x"
+          },
+          "right": {
+            "if": {
+              "cond": {
+                "binop": "<",
+                "left": {
+                  "var": "x"
+                },
+                "right": {
+                  "const": 0
+                }
+              },
+              "then": {
+                "write": {
+                  "const": 1
+                }
+              },
+              "else": {
+                "if": {
+                  "cond": {
+                    "binop": "==",
+                    "left": {
+                      "var": "x"
+                    },
+                    "right": {
+                      "const": 0
+                    }
+                  },
+                  "then": {
+                    "write": {
+                      "const": 2
+                    }
+                  },
+                  "else": {
+                    "write": {
+                      "const": 3
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "input": "-4",
+      "output": "1",
+      "message": ""
+    },
+    {
+      "name": "source_elif_middle",
+      "source": "{read(x); if(x<0)write(1); elif(x==0)write(2); else write(3);}",
+      "program": {
+        "seq": {
+          "left": {
+            "read": "x"
+          },
+          "right": {
+            "if": {
+              "cond": {
+                "binop": "<",
+                "left": {
+                  "var": "x"
+                },
+                "right": {
+                  "const": 0
+                }
+              },
+              "then": {
+                "write": {
+                  "const": 1
+                }
+              },
+              "else": {
+                "if": {
+                  "cond": {
+                    "binop": "==",
+                    "left": {
+                      "var": "x"
+                    },
+                    "right": {
+                      "const": 0
+                    }
+                  },
+                  "then": {
+                    "write": {
+                      "const": 2
+                    }
+                  },
+                  "else": {
+                    "write": {
+                      "const": 3
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "input": "0",
+      "output": "2",
+      "message": ""
+    },
+    {
+      "name": "source_elif_last",
+      "source": "{read(x); if(x<0)write(1); elif(x==0)write(2); else write(3);}",
+      "program": {
+        "seq": {
+          "left": {
+            "read": "x"
+          },
+          "right": {
+            "if": {
+              "cond": {
+                "binop": "<",
+                "left": {
+                  "var": "x"
+                },
+                "right": {
+                  "const": 0
+                }
+              },
+              "then": {
+                "write": {
+                  "const": 1
+                }
+              },
+              "else": {
+                "if": {
+                  "cond": {
+                    "binop": "==",
+                    "left": {
+                      "var": "x"
+                    },
+                    "right": {
+                      "const": 0
+                    }
+                  },
+                  "then": {
+                    "write": {
+                      "const": 2
+                    }
+                  },
+                  "else": {
+                    "write": {
+                      "const": 3
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "input": "4",
+      "output": "3",
+      "message": ""
+    },
+    {
+      "name": "source_dangling_else",
+      "source": "{if(1) if(0)write(1); else write(2);}",
+      "program": {
+        "if": {
+          "cond": {
+            "const": 1
+          },
+          "then": {
+            "if": {
+              "cond": {
+                "const": 0
+              },
+              "then": {
+                "write": {
+                  "const": 1
+                }
+              },
+              "else": {
+                "write": {
+                  "const": 2
+                }
+              }
+            }
+          },
+          "else": "skip"
+        }
+      },
+      "input": "0",
+      "output": "2",
+      "message": ""
+    },
+    {
+      "name": "source_unreachable_error",
+      "source": "{if(0)write(missing); else write(7);}",
+      "program": {
+        "if": {
+          "cond": {
+            "const": 0
+          },
+          "then": {
+            "write": {
+              "var": "missing"
+            }
+          },
+          "else": {
+            "write": {
+              "const": 7
+            }
+          }
+        }
+      },
+      "input": "0",
+      "output": "7",
+      "message": ""
+    },
+    {
+      "name": "source_while_zero_iterations",
+      "source": "{while(0)write(99); write(1);}",
+      "program": {
+        "seq": {
+          "left": {
+            "while": {
+              "cond": {
+                "const": 0
+              },
+              "body": {
+                "write": {
+                  "const": 99
+                }
+              }
+            }
+          },
+          "right": {
+            "write": {
+              "const": 1
+            }
+          }
+        }
+      },
+      "input": "0",
+      "output": "1",
+      "message": ""
+    },
+    {
+      "name": "source_while_countdown",
+      "source": "{x=3; while(x){write(x); x-=1;} write(x);}",
+      "program": {
+        "seq": {
+          "left": {
+            "assn": {
+              "dst": "x",
+              "src": {
+                "const": 3
+              }
+            }
+          },
+          "right": {
+            "seq": {
+              "left": {
+                "while": {
+                  "cond": {
+                    "var": "x"
+                  },
+                  "body": {
+                    "seq": {
+                      "left": {
+                        "write": {
+                          "var": "x"
+                        }
+                      },
+                      "right": {
+                        "assn": {
+                          "dst": "x",
+                          "src": {
+                            "binop": "-",
+                            "left": {
+                              "var": "x"
+                            },
+                            "right": {
+                              "const": 1
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "right": {
+                "write": {
+                  "var": "x"
+                }
+              }
+            }
+          }
+        }
+      },
+      "input": "0",
+      "output": "3; 2; 1; 0",
+      "message": ""
+    },
+    {
+      "name": "source_do_once",
+      "source": "{x=0; do {x+=1; write(x);} while(0);}",
+      "program": {
+        "seq": {
+          "left": {
+            "assn": {
+              "dst": "x",
+              "src": {
+                "const": 0
+              }
+            }
+          },
+          "right": {
+            "do": {
+              "body": {
+                "seq": {
+                  "left": {
+                    "assn": {
+                      "dst": "x",
+                      "src": {
+                        "binop": "+",
+                        "left": {
+                          "var": "x"
+                        },
+                        "right": {
+                          "const": 1
+                        }
+                      }
+                    }
+                  },
+                  "right": {
+                    "write": {
+                      "var": "x"
+                    }
+                  }
+                }
+              },
+              "cond": {
+                "const": 0
+              }
+            }
+          }
+        }
+      },
+      "input": "0",
+      "output": "1",
+      "message": ""
+    },
+    {
+      "name": "source_do_loop",
+      "source": "{x=0; do {x+=1; write(x);} while(x<3);}",
+      "program": {
+        "seq": {
+          "left": {
+            "assn": {
+              "dst": "x",
+              "src": {
+                "const": 0
+              }
+            }
+          },
+          "right": {
+            "do": {
+              "body": {
+                "seq": {
+                  "left": {
+                    "assn": {
+                      "dst": "x",
+                      "src": {
+                        "binop": "+",
+                        "left": {
+                          "var": "x"
+                        },
+                        "right": {
+                          "const": 1
+                        }
+                      }
+                    }
+                  },
+                  "right": {
+                    "write": {
+                      "var": "x"
+                    }
+                  }
+                }
+              },
+              "cond": {
+                "binop": "<",
+                "left": {
+                  "var": "x"
+                },
+                "right": {
+                  "const": 3
+                }
+              }
+            }
+          }
+        }
+      },
+      "input": "0",
+      "output": "1; 2; 3",
+      "message": ""
+    },
+    {
+      "name": "source_for_loop",
+      "source": "{for(i=0; i<4; i+=1)write(i); write(i);}",
+      "program": {
+        "seq": {
+          "left": {
+            "seq": {
+              "left": {
+                "assn": {
+                  "dst": "i",
+                  "src": {
+                    "const": 0
+                  }
+                }
+              },
+              "right": {
+                "while": {
+                  "cond": {
+                    "binop": "<",
+                    "left": {
+                      "var": "i"
+                    },
+                    "right": {
+                      "const": 4
+                    }
+                  },
+                  "body": {
+                    "seq": {
+                      "left": {
+                        "write": {
+                          "var": "i"
+                        }
+                      },
+                      "right": {
+                        "assn": {
+                          "dst": "i",
+                          "src": {
+                            "binop": "+",
+                            "left": {
+                              "var": "i"
+                            },
+                            "right": {
+                              "const": 1
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "right": {
+            "write": {
+              "var": "i"
+            }
+          }
+        }
+      },
+      "input": "0",
+      "output": "0; 1; 2; 3; 4",
+      "message": ""
+    },
+    {
+      "name": "source_for_zero_iterations",
+      "source": "{for(i=5; i<3; i+=1)write(99); write(i);}",
+      "program": {
+        "seq": {
+          "left": {
+            "seq": {
+              "left": {
+                "assn": {
+                  "dst": "i",
+                  "src": {
+                    "const": 5
+                  }
+                }
+              },
+              "right": {
+                "while": {
+                  "cond": {
+                    "binop": "<",
+                    "left": {
+                      "var": "i"
+                    },
+                    "right": {
+                      "const": 3
+                    }
+                  },
+                  "body": {
+                    "seq": {
+                      "left": {
+                        "write": {
+                          "const": 99
+                        }
+                      },
+                      "right": {
+                        "assn": {
+                          "dst": "i",
+                          "src": {
+                            "binop": "+",
+                            "left": {
+                              "var": "i"
+                            },
+                            "right": {
+                              "const": 1
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "right": {
+            "write": {
+              "var": "i"
+            }
+          }
+        }
+      },
+      "input": "0",
+      "output": "5",
+      "message": ""
+    },
+    {
+      "name": "source_nested_loops",
+      "source": "{for(i=1; i<=2; i+=1){for(j=1; j<=3; j+=1)write(i*10+j);}}",
+      "program": {
+        "seq": {
+          "left": {
+            "assn": {
+              "dst": "i",
+              "src": {
+                "const": 1
+              }
+            }
+          },
+          "right": {
+            "while": {
+              "cond": {
+                "binop": "<=",
+                "left": {
+                  "var": "i"
+                },
+                "right": {
+                  "const": 2
+                }
+              },
+              "body": {
+                "seq": {
+                  "left": {
+                    "seq": {
+                      "left": {
+                        "assn": {
+                          "dst": "j",
+                          "src": {
+                            "const": 1
+                          }
+                        }
+                      },
+                      "right": {
+                        "while": {
+                          "cond": {
+                            "binop": "<=",
+                            "left": {
+                              "var": "j"
+                            },
+                            "right": {
+                              "const": 3
+                            }
+                          },
+                          "body": {
+                            "seq": {
+                              "left": {
+                                "write": {
+                                  "binop": "+",
+                                  "left": {
+                                    "binop": "*",
+                                    "left": {
+                                      "var": "i"
+                                    },
+                                    "right": {
+                                      "const": 10
+                                    }
+                                  },
+                                  "right": {
+                                    "var": "j"
+                                  }
+                                }
+                              },
+                              "right": {
+                                "assn": {
+                                  "dst": "j",
+                                  "src": {
+                                    "binop": "+",
+                                    "left": {
+                                      "var": "j"
+                                    },
+                                    "right": {
+                                      "const": 1
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "right": {
+                    "assn": {
+                      "dst": "i",
+                      "src": {
+                        "binop": "+",
+                        "left": {
+                          "var": "i"
+                        },
+                        "right": {
+                          "const": 1
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "input": "0",
+      "output": "11; 12; 13; 21; 22; 23",
+      "message": ""
+    },
+    {
+      "name": "source_branch_inside_loop",
+      "source": "{for(i=0; i<5; i+=1){if(i%2==0)write(i); else skip;}}",
+      "program": {
+        "seq": {
+          "left": {
+            "assn": {
+              "dst": "i",
+              "src": {
+                "const": 0
+              }
+            }
+          },
+          "right": {
+            "while": {
+              "cond": {
+                "binop": "<",
+                "left": {
+                  "var": "i"
+                },
+                "right": {
+                  "const": 5
+                }
+              },
+              "body": {
+                "seq": {
+                  "left": {
+                    "if": {
+                      "cond": {
+                        "binop": "==",
+                        "left": {
+                          "binop": "%",
+                          "left": {
+                            "var": "i"
+                          },
+                          "right": {
+                            "const": 2
+                          }
+                        },
+                        "right": {
+                          "const": 0
+                        }
+                      },
+                      "then": {
+                        "write": {
+                          "var": "i"
+                        }
+                      },
+                      "else": "skip"
+                    }
+                  },
+                  "right": {
+                    "assn": {
+                      "dst": "i",
+                      "src": {
+                        "binop": "+",
+                        "left": {
+                          "var": "i"
+                        },
+                        "right": {
+                          "const": 1
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "input": "0",
+      "output": "0; 2; 4",
+      "message": ""
+    },
+    {
+      "name": "source_factorial",
+      "source": "{read(n); result=1; while(n>1){result*=n; n-=1;} write(result);}",
+      "program": {
+        "seq": {
+          "left": {
+            "read": "n"
+          },
+          "right": {
+            "seq": {
+              "left": {
+                "assn": {
+                  "dst": "result",
+                  "src": {
+                    "const": 1
+                  }
+                }
+              },
+              "right": {
+                "seq": {
+                  "left": {
+                    "while": {
+                      "cond": {
+                        "binop": ">",
+                        "left": {
+                          "var": "n"
+                        },
+                        "right": {
+                          "const": 1
+                        }
+                      },
+                      "body": {
+                        "seq": {
+                          "left": {
+                            "assn": {
+                              "dst": "result",
+                              "src": {
+                                "binop": "*",
+                                "left": {
+                                  "var": "result"
+                                },
+                                "right": {
+                                  "var": "n"
+                                }
+                              }
+                            }
+                          },
+                          "right": {
+                            "assn": {
+                              "dst": "n",
+                              "src": {
+                                "binop": "-",
+                                "left": {
+                                  "var": "n"
+                                },
+                                "right": {
+                                  "const": 1
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "right": {
+                    "write": {
+                      "var": "result"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "input": "6",
+      "output": "720",
+      "message": ""
+    },
+    {
+      "name": "source_factorial_zero",
+      "source": "{read(n); result=1; while(n>1){result*=n; n-=1;} write(result);}",
+      "program": {
+        "seq": {
+          "left": {
+            "read": "n"
+          },
+          "right": {
+            "seq": {
+              "left": {
+                "assn": {
+                  "dst": "result",
+                  "src": {
+                    "const": 1
+                  }
+                }
+              },
+              "right": {
+                "seq": {
+                  "left": {
+                    "while": {
+                      "cond": {
+                        "binop": ">",
+                        "left": {
+                          "var": "n"
+                        },
+                        "right": {
+                          "const": 1
+                        }
+                      },
+                      "body": {
+                        "seq": {
+                          "left": {
+                            "assn": {
+                              "dst": "result",
+                              "src": {
+                                "binop": "*",
+                                "left": {
+                                  "var": "result"
+                                },
+                                "right": {
+                                  "var": "n"
+                                }
+                              }
+                            }
+                          },
+                          "right": {
+                            "assn": {
+                              "dst": "n",
+                              "src": {
+                                "binop": "-",
+                                "left": {
+                                  "var": "n"
+                                },
+                                "right": {
+                                  "const": 1
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "right": {
+                    "write": {
+                      "var": "result"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "input": "0",
+      "output": "1",
+      "message": ""
+    },
+    {
+      "name": "source_gcd",
+      "source": "{read(a); read(b); while(b!=0){r=a%b; a=b; b=r;} write(a);}",
+      "program": {
+        "seq": {
+          "left": {
+            "read": "a"
+          },
+          "right": {
+            "seq": {
+              "left": {
+                "read": "b"
+              },
+              "right": {
+                "seq": {
+                  "left": {
+                    "while": {
+                      "cond": {
+                        "binop": "!=",
+                        "left": {
+                          "var": "b"
+                        },
+                        "right": {
+                          "const": 0
+                        }
+                      },
+                      "body": {
+                        "seq": {
+                          "left": {
+                            "assn": {
+                              "dst": "r",
+                              "src": {
+                                "binop": "%",
+                                "left": {
+                                  "var": "a"
+                                },
+                                "right": {
+                                  "var": "b"
+                                }
+                              }
+                            }
+                          },
+                          "right": {
+                            "seq": {
+                              "left": {
+                                "assn": {
+                                  "dst": "a",
+                                  "src": {
+                                    "var": "b"
+                                  }
+                                }
+                              },
+                              "right": {
+                                "assn": {
+                                  "dst": "b",
+                                  "src": {
+                                    "var": "r"
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "right": {
+                    "write": {
+                      "var": "a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "input": "48,18",
+      "output": "6",
+      "message": ""
+    },
+    {
+      "name": "source_fibonacci",
+      "source": "{a=0; b=1; for(i=0; i<8; i+=1){write(a); next=a+b; a=b; b=next;}}",
+      "program": {
+        "seq": {
+          "left": {
+            "assn": {
+              "dst": "a",
+              "src": {
+                "const": 0
+              }
+            }
+          },
+          "right": {
+            "seq": {
+              "left": {
+                "assn": {
+                  "dst": "b",
+                  "src": {
+                    "const": 1
+                  }
+                }
+              },
+              "right": {
+                "seq": {
+                  "left": {
+                    "assn": {
+                      "dst": "i",
+                      "src": {
+                        "const": 0
+                      }
+                    }
+                  },
+                  "right": {
+                    "while": {
+                      "cond": {
+                        "binop": "<",
+                        "left": {
+                          "var": "i"
+                        },
+                        "right": {
+                          "const": 8
+                        }
+                      },
+                      "body": {
+                        "seq": {
+                          "left": {
+                            "seq": {
+                              "left": {
+                                "write": {
+                                  "var": "a"
+                                }
+                              },
+                              "right": {
+                                "seq": {
+                                  "left": {
+                                    "assn": {
+                                      "dst": "next",
+                                      "src": {
+                                        "binop": "+",
+                                        "left": {
+                                          "var": "a"
+                                        },
+                                        "right": {
+                                          "var": "b"
+                                        }
+                                      }
+                                    }
+                                  },
+                                  "right": {
+                                    "seq": {
+                                      "left": {
+                                        "assn": {
+                                          "dst": "a",
+                                          "src": {
+                                            "var": "b"
+                                          }
+                                        }
+                                      },
+                                      "right": {
+                                        "assn": {
+                                          "dst": "b",
+                                          "src": {
+                                            "var": "next"
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "right": {
+                            "assn": {
+                              "dst": "i",
+                              "src": {
+                                "binop": "+",
+                                "left": {
+                                  "var": "i"
+                                },
+                                "right": {
+                                  "const": 1
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "input": "0",
+      "output": "0; 1; 1; 2; 3; 5; 8; 13",
+      "message": ""
+    },
+    {
+      "name": "source_sum_until_zero",
+      "source": "{sum=0; read(x); while(x!=0){sum+=x; read(x);} write(sum);}",
+      "program": {
+        "seq": {
+          "left": {
+            "assn": {
+              "dst": "sum",
+              "src": {
+                "const": 0
+              }
+            }
+          },
+          "right": {
+            "seq": {
+              "left": {
+                "read": "x"
+              },
+              "right": {
+                "seq": {
+                  "left": {
+                    "while": {
+                      "cond": {
+                        "binop": "!=",
+                        "left": {
+                          "var": "x"
+                        },
+                        "right": {
+                          "const": 0
+                        }
+                      },
+                      "body": {
+                        "seq": {
+                          "left": {
+                            "assn": {
+                              "dst": "sum",
+                              "src": {
+                                "binop": "+",
+                                "left": {
+                                  "var": "sum"
+                                },
+                                "right": {
+                                  "var": "x"
+                                }
+                              }
+                            }
+                          },
+                          "right": {
+                            "read": "x"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "right": {
+                    "write": {
+                      "var": "sum"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "input": "5,-2,9,0",
+      "output": "12",
+      "message": ""
+    },
+    {
+      "name": "source_comments_and_identifiers",
+      "source": "{-- line comment\n aB_2=3 (* outer (* nested *) comment *); write(aB_2);}",
+      "program": {
+        "seq": {
+          "left": {
+            "assn": {
+              "dst": "aB_2",
+              "src": {
+                "const": 3
+              }
+            }
+          },
+          "right": {
+            "write": {
+              "var": "aB_2"
+            }
+          }
+        }
+      },
+      "input": "0",
+      "output": "3",
+      "message": ""
+    },
+    {
+      "name": "source_optional_semicolons",
+      "source": "{x=3 write(x) {x=4 write(x)} skip}",
+      "program": {
+        "seq": {
+          "left": {
+            "assn": {
+              "dst": "x",
+              "src": {
+                "const": 3
+              }
+            }
+          },
+          "right": {
+            "seq": {
+              "left": {
+                "write": {
+                  "var": "x"
+                }
+              },
+              "right": {
+                "seq": {
+                  "left": {
+                    "seq": {
+                      "left": {
+                        "assn": {
+                          "dst": "x",
+                          "src": {
+                            "const": 4
+                          }
+                        }
+                      },
+                      "right": {
+                        "write": {
+                          "var": "x"
+                        }
+                      }
+                    }
+                  },
+                  "right": "skip"
+                }
+              }
+            }
+          }
+        }
+      },
+      "input": "0",
+      "output": "3; 4",
+      "message": ""
+    },
+    {
+      "name": "source_global_block_scope",
+      "source": "{x=1; {x=2; y=3;} write(x); write(y);}",
+      "program": {
+        "seq": {
+          "left": {
+            "assn": {
+              "dst": "x",
+              "src": {
+                "const": 1
+              }
+            }
+          },
+          "right": {
+            "seq": {
+              "left": {
+                "seq": {
+                  "left": {
+                    "assn": {
+                      "dst": "x",
+                      "src": {
+                        "const": 2
+                      }
+                    }
+                  },
+                  "right": {
+                    "assn": {
+                      "dst": "y",
+                      "src": {
+                        "const": 3
+                      }
+                    }
+                  }
+                }
+              },
+              "right": {
+                "seq": {
+                  "left": {
+                    "write": {
+                      "var": "x"
+                    }
+                  },
+                  "right": {
+                    "write": {
+                      "var": "y"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "input": "0",
+      "output": "2; 3",
+      "message": ""
+    },
+    {
+      "name": "source_int32_wrap",
+      "source": "{write(2147483647+1); write(-2147483648-1); write(50000*50000);}",
+      "program": {
+        "seq": {
+          "left": {
+            "write": {
+              "binop": "+",
+              "left": {
+                "const": 2147483647
+              },
+              "right": {
+                "const": 1
+              }
+            }
+          },
+          "right": {
+            "seq": {
+              "left": {
+                "write": {
+                  "binop": "-",
+                  "left": {
+                    "const": -2147483648
+                  },
+                  "right": {
+                    "const": 1
+                  }
+                }
+              },
+              "right": {
+                "write": {
+                  "binop": "*",
+                  "left": {
+                    "const": 50000
+                  },
+                  "right": {
+                    "const": 50000
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "input": "0",
+      "output": "-2147483648; 2147483647; -1794967296",
+      "message": ""
+    },
+    {
+      "name": "source_undefined_variable",
+      "source": "{write(x);}",
+      "program": {
+        "write": {
+          "var": "x"
+        }
+      },
+      "input": "0",
+      "output": "",
+      "message": "ERROR: variable \"x\" is undefined"
+    },
+    {
+      "name": "source_input_exhausted",
+      "source": "{read(a); read(b);}",
+      "program": {
+        "seq": {
+          "left": {
+            "read": "a"
+          },
+          "right": {
+            "read": "b"
+          }
+        }
+      },
+      "input": "1",
+      "output": "",
+      "message": "ERROR: input exhausted"
+    },
+    {
+      "name": "source_divide_by_zero",
+      "source": "{write(1/0);}",
+      "program": {
+        "write": {
+          "binop": "/",
+          "left": {
+            "const": 1
+          },
+          "right": {
+            "const": 0
+          }
+        }
+      },
+      "input": "0",
+      "output": "",
+      "message": "Division_by_zero"
+    },
+    {
+      "name": "source_modulo_by_zero",
+      "source": "{write(1%0);}",
+      "program": {
+        "write": {
+          "binop": "%",
+          "left": {
+            "const": 1
+          },
+          "right": {
+            "const": 0
+          }
+        }
+      },
+      "input": "0",
+      "output": "",
+      "message": "Division_by_zero"
+    },
+    {
+      "name": "source_eager_and",
+      "source": "{write(0 && (1/0));}",
+      "program": {
+        "write": {
+          "binop": "&&",
+          "left": {
+            "const": 0
+          },
+          "right": {
+            "binop": "/",
+            "left": {
+              "const": 1
+            },
+            "right": {
+              "const": 0
+            }
+          }
+        }
+      },
+      "input": "0",
+      "output": "",
+      "message": "Division_by_zero"
+    },
+    {
+      "name": "source_eager_or",
+      "source": "{write(1 !! (1/0));}",
+      "program": {
+        "write": {
+          "binop": "!!",
+          "left": {
+            "const": 1
+          },
+          "right": {
+            "binop": "/",
+            "left": {
+              "const": 1
+            },
+            "right": {
+              "const": 0
+            }
+          }
+        }
+      },
+      "input": "0",
+      "output": "",
+      "message": "Division_by_zero"
+    },
+    {
+      "name": "probe_overview",
+      "source": "{a=[1,2,\"hi\"];write(a);write(a.length);write(a[2][0]);}",
+      "program": {
+        "seq": {
+          "left": {
+            "assn": {
+              "dst": "a",
+              "src": {
+                "array": [
+                  {
+                    "const": 1
+                  },
+                  {
+                    "const": 2
+                  },
+                  {
+                    "string": "hi"
+                  }
+                ]
+              }
+            }
+          },
+          "right": {
+            "seq": {
+              "left": {
+                "write": {
+                  "var": "a"
+                }
+              },
+              "right": {
+                "seq": {
+                  "left": {
+                    "write": {
+                      "length": {
+                        "var": "a"
+                      }
+                    }
+                  },
+                  "right": {
+                    "write": {
+                      "elem": {
+                        "elem": {
+                          "var": "a"
+                        },
+                        "index": {
+                          "const": 2
+                        }
+                      },
+                      "index": {
+                        "const": 0
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "input": "0",
+      "output": "[1; 2; hi]; 3; 104",
+      "message": ""
+    },
+    {
+      "name": "probe_string_alias",
+      "source": "{s=\"abc\";t=s;t[0]=90;write(s);write(t);}",
+      "program": {
+        "seq": {
+          "left": {
+            "assn": {
+              "dst": "s",
+              "src": {
+                "string": "abc"
+              }
+            }
+          },
+          "right": {
+            "seq": {
+              "left": {
+                "assn": {
+                  "dst": "t",
+                  "src": {
+                    "var": "s"
+                  }
+                }
+              },
+              "right": {
+                "seq": {
+                  "left": {
+                    "set": {
+                      "dst": {
+                        "var": "t"
+                      },
+                      "idx": {
+                        "const": 0
+                      },
+                      "value": {
+                        "const": 90
+                      }
+                    }
+                  },
+                  "right": {
+                    "seq": {
+                      "left": {
+                        "write": {
+                          "var": "s"
+                        }
+                      },
+                      "right": {
+                        "write": {
+                          "var": "t"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "input": "0",
+      "output": "Zbc; Zbc",
+      "message": ""
+    },
+    {
+      "name": "probe_array_alias",
+      "source": "{a=[1,[2]];b=a;b[1][0]=9;write(a);}",
+      "program": {
+        "seq": {
+          "left": {
+            "assn": {
+              "dst": "a",
+              "src": {
+                "array": [
+                  {
+                    "const": 1
+                  },
+                  {
+                    "array": [
+                      {
+                        "const": 2
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          },
+          "right": {
+            "seq": {
+              "left": {
+                "assn": {
+                  "dst": "b",
+                  "src": {
+                    "var": "a"
+                  }
+                }
+              },
+              "right": {
+                "seq": {
+                  "left": {
+                    "set": {
+                      "dst": {
+                        "elem": {
+                          "var": "b"
+                        },
+                        "index": {
+                          "const": 1
+                        }
+                      },
+                      "idx": {
+                        "const": 0
+                      },
+                      "value": {
+                        "const": 9
+                      }
+                    }
+                  },
+                  "right": {
+                    "write": {
+                      "var": "a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "input": "0",
+      "output": "[1; [9]]",
+      "message": ""
+    },
+    {
+      "name": "probe_empty_string",
+      "source": "{write(\"\");write(\"\".length);}",
+      "program": {
+        "seq": {
+          "left": {
+            "write": {
+              "string": ""
+            }
+          },
+          "right": {
+            "write": {
+              "length": {
+                "string": ""
+              }
+            }
+          }
+        }
+      },
+      "input": "0",
+      "output": "; 0",
+      "message": ""
+    },
+    {
+      "name": "probe_quote_escape",
+      "source": "{write(\"a\"\"b\");write(\"a\"\"b\".length);}",
+      "program": {
+        "seq": {
+          "left": {
+            "write": {
+              "string": "a\"b"
+            }
+          },
+          "right": {
+            "write": {
+              "length": {
+                "string": "a\"b"
+              }
+            }
+          }
+        }
+      },
+      "input": "0",
+      "output": "a\"b; 3",
+      "message": ""
+    },
+    {
+      "name": "probe_literal_backslash",
+      "source": "{write(\"a\\nb\");write(\"a\\nb\".length);}",
+      "program": {
+        "seq": {
+          "left": {
+            "write": {
+              "string": "a\\nb"
+            }
+          },
+          "right": {
+            "write": {
+              "length": {
+                "string": "a\\nb"
+              }
+            }
+          }
+        }
+      },
+      "input": "0",
+      "output": "a\\nb; 4",
+      "message": ""
+    },
+    {
+      "name": "probe_literal_newline",
+      "source": "{write(\"a\nb\");write(\"a\nb\".length);}",
+      "program": {
+        "seq": {
+          "left": {
+            "write": {
+              "string": "a\nb"
+            }
+          },
+          "right": {
+            "write": {
+              "length": {
+                "string": "a\nb"
+              }
+            }
+          }
+        }
+      },
+      "input": "0",
+      "output": "a\nb; 3",
+      "message": ""
+    },
+    {
+      "name": "probe_utf8",
+      "source": "{s=\"я🙂\";write(s.length);write(s[0]);write(s[1]);write(s[2]);write(s[3]);write(s[4]);write(s[5]);}",
+      "program": {
+        "seq": {
+          "left": {
+            "assn": {
+              "dst": "s",
+              "src": {
+                "string": "я🙂"
+              }
+            }
+          },
+          "right": {
+            "seq": {
+              "left": {
+                "write": {
+                  "length": {
+                    "var": "s"
+                  }
+                }
+              },
+              "right": {
+                "seq": {
+                  "left": {
+                    "write": {
+                      "elem": {
+                        "var": "s"
+                      },
+                      "index": {
+                        "const": 0
+                      }
+                    }
+                  },
+                  "right": {
+                    "seq": {
+                      "left": {
+                        "write": {
+                          "elem": {
+                            "var": "s"
+                          },
+                          "index": {
+                            "const": 1
+                          }
+                        }
+                      },
+                      "right": {
+                        "seq": {
+                          "left": {
+                            "write": {
+                              "elem": {
+                                "var": "s"
+                              },
+                              "index": {
+                                "const": 2
+                              }
+                            }
+                          },
+                          "right": {
+                            "seq": {
+                              "left": {
+                                "write": {
+                                  "elem": {
+                                    "var": "s"
+                                  },
+                                  "index": {
+                                    "const": 3
+                                  }
+                                }
+                              },
+                              "right": {
+                                "seq": {
+                                  "left": {
+                                    "write": {
+                                      "elem": {
+                                        "var": "s"
+                                      },
+                                      "index": {
+                                        "const": 4
+                                      }
+                                    }
+                                  },
+                                  "right": {
+                                    "write": {
+                                      "elem": {
+                                        "var": "s"
+                                      },
+                                      "index": {
+                                        "const": 5
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "input": "0",
+      "output": "6; 209; 143; 240; 159; 153; 130",
+      "message": ""
+    },
+    {
+      "name": "probe_mutable_utf8",
+      "source": "{s=\"я\";s[0]=65;write(s.length);write(s[0]);write(s[1]);}",
+      "program": {
+        "seq": {
+          "left": {
+            "assn": {
+              "dst": "s",
+              "src": {
+                "string": "я"
+              }
+            }
+          },
+          "right": {
+            "seq": {
+              "left": {
+                "set": {
+                  "dst": {
+                    "var": "s"
+                  },
+                  "idx": {
+                    "const": 0
+                  },
+                  "value": {
+                    "const": 65
+                  }
+                }
+              },
+              "right": {
+                "seq": {
+                  "left": {
+                    "write": {
+                      "length": {
+                        "var": "s"
+                      }
+                    }
+                  },
+                  "right": {
+                    "seq": {
+                      "left": {
+                        "write": {
+                          "elem": {
+                            "var": "s"
+                          },
+                          "index": {
+                            "const": 0
+                          }
+                        }
+                      },
+                      "right": {
+                        "write": {
+                          "elem": {
+                            "var": "s"
+                          },
+                          "index": {
+                            "const": 1
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "input": "0",
+      "output": "2; 65; 143",
+      "message": ""
+    },
+    {
+      "name": "probe_separate_literal_allocations",
+      "source": "{a=\"ab\";b=\"ab\";a[0]=90;write(b);a=[1];b=[1];a[0]=9;write(b);}",
+      "program": {
+        "seq": {
+          "left": {
+            "assn": {
+              "dst": "a",
+              "src": {
+                "string": "ab"
+              }
+            }
+          },
+          "right": {
+            "seq": {
+              "left": {
+                "assn": {
+                  "dst": "b",
+                  "src": {
+                    "string": "ab"
+                  }
+                }
+              },
+              "right": {
+                "seq": {
+                  "left": {
+                    "set": {
+                      "dst": {
+                        "var": "a"
+                      },
+                      "idx": {
+                        "const": 0
+                      },
+                      "value": {
+                        "const": 90
+                      }
+                    }
+                  },
+                  "right": {
+                    "seq": {
+                      "left": {
+                        "write": {
+                          "var": "b"
+                        }
+                      },
+                      "right": {
+                        "seq": {
+                          "left": {
+                            "assn": {
+                              "dst": "a",
+                              "src": {
+                                "array": [
+                                  {
+                                    "const": 1
+                                  }
+                                ]
+                              }
+                            }
+                          },
+                          "right": {
+                            "seq": {
+                              "left": {
+                                "assn": {
+                                  "dst": "b",
+                                  "src": {
+                                    "array": [
+                                      {
+                                        "const": 1
+                                      }
+                                    ]
+                                  }
+                                }
+                              },
+                              "right": {
+                                "seq": {
+                                  "left": {
+                                    "set": {
+                                      "dst": {
+                                        "var": "a"
+                                      },
+                                      "idx": {
+                                        "const": 0
+                                      },
+                                      "value": {
+                                        "const": 9
+                                      }
+                                    }
+                                  },
+                                  "right": {
+                                    "write": {
+                                      "var": "b"
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "input": "0",
+      "output": "ab; [1]",
+      "message": ""
+    },
+    {
+      "name": "probe_loop_literal_allocations",
+      "source": "{i=0;while(i<2){s=\"ab\";if(i==0)a=s;else s[0]=90;i+=1;}write(a);}",
+      "program": {
+        "seq": {
+          "left": {
+            "assn": {
+              "dst": "i",
+              "src": {
+                "const": 0
+              }
+            }
+          },
+          "right": {
+            "seq": {
+              "left": {
+                "while": {
+                  "cond": {
+                    "binop": "<",
+                    "left": {
+                      "var": "i"
+                    },
+                    "right": {
+                      "const": 2
+                    }
+                  },
+                  "body": {
+                    "seq": {
+                      "left": {
+                        "assn": {
+                          "dst": "s",
+                          "src": {
+                            "string": "ab"
+                          }
+                        }
+                      },
+                      "right": {
+                        "seq": {
+                          "left": {
+                            "if": {
+                              "cond": {
+                                "binop": "==",
+                                "left": {
+                                  "var": "i"
+                                },
+                                "right": {
+                                  "const": 0
+                                }
+                              },
+                              "then": {
+                                "assn": {
+                                  "dst": "a",
+                                  "src": {
+                                    "var": "s"
+                                  }
+                                }
+                              },
+                              "else": {
+                                "set": {
+                                  "dst": {
+                                    "var": "s"
+                                  },
+                                  "idx": {
+                                    "const": 0
+                                  },
+                                  "value": {
+                                    "const": 90
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "right": {
+                            "assn": {
+                              "dst": "i",
+                              "src": {
+                                "binop": "+",
+                                "left": {
+                                  "var": "i"
+                                },
+                                "right": {
+                                  "const": 1
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "right": {
+                "write": {
+                  "var": "a"
+                }
+              }
+            }
+          }
+        }
+      },
+      "input": "0",
+      "output": "ab",
+      "message": ""
+    },
+    {
+      "name": "probe_heterogeneous_nested",
+      "source": "{a=[1,\"x\",[2,3]];a[0]=\"y\";a[2][1]=[4];write(a);write(a.length);}",
+      "program": {
+        "seq": {
+          "left": {
+            "assn": {
+              "dst": "a",
+              "src": {
+                "array": [
+                  {
+                    "const": 1
+                  },
+                  {
+                    "string": "x"
+                  },
+                  {
+                    "array": [
+                      {
+                        "const": 2
+                      },
+                      {
+                        "const": 3
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          },
+          "right": {
+            "seq": {
+              "left": {
+                "set": {
+                  "dst": {
+                    "var": "a"
+                  },
+                  "idx": {
+                    "const": 0
+                  },
+                  "value": {
+                    "string": "y"
+                  }
+                }
+              },
+              "right": {
+                "seq": {
+                  "left": {
+                    "set": {
+                      "dst": {
+                        "elem": {
+                          "var": "a"
+                        },
+                        "index": {
+                          "const": 2
+                        }
+                      },
+                      "idx": {
+                        "const": 1
+                      },
+                      "value": {
+                        "array": [
+                          {
+                            "const": 4
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  "right": {
+                    "seq": {
+                      "left": {
+                        "write": {
+                          "var": "a"
+                        }
+                      },
+                      "right": {
+                        "write": {
+                          "length": {
+                            "var": "a"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "input": "0",
+      "output": "[y; x; [2; [4]]]; 3",
+      "message": ""
+    },
+    {
+      "name": "probe_length_chain",
+      "source": "{a=[\"ab\",[2,3]];write(a[0].length);write(a[1].length);write([4].length);write(\"abc\".length);}",
+      "program": {
+        "seq": {
+          "left": {
+            "assn": {
+              "dst": "a",
+              "src": {
+                "array": [
+                  {
+                    "string": "ab"
+                  },
+                  {
+                    "array": [
+                      {
+                        "const": 2
+                      },
+                      {
+                        "const": 3
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          },
+          "right": {
+            "seq": {
+              "left": {
+                "write": {
+                  "length": {
+                    "elem": {
+                      "var": "a"
+                    },
+                    "index": {
+                      "const": 0
+                    }
+                  }
+                }
+              },
+              "right": {
+                "seq": {
+                  "left": {
+                    "write": {
+                      "length": {
+                        "elem": {
+                          "var": "a"
+                        },
+                        "index": {
+                          "const": 1
+                        }
+                      }
+                    }
+                  },
+                  "right": {
+                    "seq": {
+                      "left": {
+                        "write": {
+                          "length": {
+                            "array": [
+                              {
+                                "const": 4
+                              }
+                            ]
+                          }
+                        }
+                      },
+                      "right": {
+                        "write": {
+                          "length": {
+                            "string": "abc"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "input": "0",
+      "output": "2; 2; 1; 3",
+      "message": ""
+    },
+    {
+      "name": "probe_array_extend",
+      "source": "{a=[1];a[1]=2;}",
+      "program": {
+        "seq": {
+          "left": {
+            "assn": {
+              "dst": "a",
+              "src": {
+                "array": [
+                  {
+                    "const": 1
+                  }
+                ]
+              }
+            }
+          },
+          "right": {
+            "set": {
+              "dst": {
+                "var": "a"
+              },
+              "idx": {
+                "const": 1
+              },
+              "value": {
+                "const": 2
+              }
+            }
+          }
+        }
+      },
+      "input": "0",
+      "output": "",
+      "message": "ERROR: index 1 is out of bounds [0, 1)"
+    },
+    {
+      "name": "probe_array_negative",
+      "source": "{a=[1];write(a[-1]);}",
+      "program": {
+        "seq": {
+          "left": {
+            "assn": {
+              "dst": "a",
+              "src": {
+                "array": [
+                  {
+                    "const": 1
+                  }
+                ]
+              }
+            }
+          },
+          "right": {
+            "write": {
+              "elem": {
+                "var": "a"
+              },
+              "index": {
+                "const": -1
+              }
+            }
+          }
+        }
+      },
+      "input": "0",
+      "output": "",
+      "message": "ERROR: index -1 is out of bounds [0, 1)"
+    },
+    {
+      "name": "probe_string_bounds",
+      "source": "{write(\"a\"[1]);}",
+      "program": {
+        "write": {
+          "elem": {
+            "string": "a"
+          },
+          "index": {
+            "const": 1
+          }
+        }
+      },
+      "input": "0",
+      "output": "",
+      "message": "ERROR: index 1 is out of bounds [0, 1)"
+    },
+    {
+      "name": "probe_empty_string_bounds",
+      "source": "{write(\"\"[0]);}",
+      "program": {
+        "write": {
+          "elem": {
+            "string": ""
+          },
+          "index": {
+            "const": 0
+          }
+        }
+      },
+      "input": "0",
+      "output": "",
+      "message": "ERROR: index 0 is out of bounds [0, 0)"
+    },
+    {
+      "name": "probe_index_noninteger",
+      "source": "{write([1][\"0\"]);}",
+      "program": {
+        "write": {
+          "elem": {
+            "array": [
+              {
+                "const": 1
+              }
+            ]
+          },
+          "index": {
+            "string": "0"
+          }
+        }
+      },
+      "input": "0",
+      "output": "",
+      "message": "ERROR: integer value expected but \"0\" given"
+    },
+    {
+      "name": "probe_index_integer",
+      "source": "{write(12[0]);}",
+      "program": {
+        "write": {
+          "elem": {
+            "const": 12
+          },
+          "index": {
+            "const": 0
+          }
+        }
+      },
+      "input": "0",
+      "output": "",
+      "message": "ERROR: array/string value expected but \"12\" given"
+    },
+    {
+      "name": "probe_length_integer",
+      "source": "{write(12.length);}",
+      "program": {
+        "write": {
+          "length": {
+            "const": 12
+          }
+        }
+      },
+      "input": "0",
+      "output": "",
+      "message": "ERROR: array/string value expected but \"12\" given"
+    },
+    {
+      "name": "probe_length_postfix_then_index",
+      "source": "{write(\"ab\".length[0]);}",
+      "program": {
+        "write": {
+          "elem": {
+            "length": {
+              "string": "ab"
+            }
+          },
+          "index": {
+            "const": 0
+          }
+        }
+      },
+      "input": "0",
+      "output": "",
+      "message": "ERROR: array/string value expected but \"2\" given"
+    },
+    {
+      "name": "probe_string_set_type",
+      "source": "{s=\"ab\";s[0]=\"Z\";}",
+      "program": {
+        "seq": {
+          "left": {
+            "assn": {
+              "dst": "s",
+              "src": {
+                "string": "ab"
+              }
+            }
+          },
+          "right": {
+            "set": {
+              "dst": {
+                "var": "s"
+              },
+              "idx": {
+                "const": 0
+              },
+              "value": {
+                "string": "Z"
+              }
+            }
+          }
+        }
+      },
+      "input": "0",
+      "output": "",
+      "message": "ERROR: integer value expected but \"Z\" given"
+    },
+    {
+      "name": "probe_string_set_negative",
+      "source": "{s=\"ab\";s[0]=-1;write(s[0]);}",
+      "program": {
+        "seq": {
+          "left": {
+            "assn": {
+              "dst": "s",
+              "src": {
+                "string": "ab"
+              }
+            }
+          },
+          "right": {
+            "seq": {
+              "left": {
+                "set": {
+                  "dst": {
+                    "var": "s"
+                  },
+                  "idx": {
+                    "const": 0
+                  },
+                  "value": {
+                    "const": -1
+                  }
+                }
+              },
+              "right": {
+                "write": {
+                  "elem": {
+                    "var": "s"
+                  },
+                  "index": {
+                    "const": 0
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "input": "0",
+      "output": "",
+      "message": "Invalid_argument(\"Char.chr\")"
+    },
+    {
+      "name": "probe_string_set_256",
+      "source": "{s=\"ab\";s[0]=256;write(s[0]);}",
+      "program": {
+        "seq": {
+          "left": {
+            "assn": {
+              "dst": "s",
+              "src": {
+                "string": "ab"
+              }
+            }
+          },
+          "right": {
+            "seq": {
+              "left": {
+                "set": {
+                  "dst": {
+                    "var": "s"
+                  },
+                  "idx": {
+                    "const": 0
+                  },
+                  "value": {
+                    "const": 256
+                  }
+                }
+              },
+              "right": {
+                "write": {
+                  "elem": {
+                    "var": "s"
+                  },
+                  "index": {
+                    "const": 0
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "input": "0",
+      "output": "",
+      "message": "Invalid_argument(\"Char.chr\")"
+    },
+    {
+      "name": "probe_string_set_255",
+      "source": "{s=\"ab\";s[0]=255;write(s[0]);}",
+      "program": {
+        "seq": {
+          "left": {
+            "assn": {
+              "dst": "s",
+              "src": {
+                "string": "ab"
+              }
+            }
+          },
+          "right": {
+            "seq": {
+              "left": {
+                "set": {
+                  "dst": {
+                    "var": "s"
+                  },
+                  "idx": {
+                    "const": 0
+                  },
+                  "value": {
+                    "const": 255
+                  }
+                }
+              },
+              "right": {
+                "write": {
+                  "elem": {
+                    "var": "s"
+                  },
+                  "index": {
+                    "const": 0
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "input": "0",
+      "output": "255",
+      "message": ""
+    },
+    {
+      "name": "probe_index_compound",
+      "source": "{a=[10];a[0]+=2;write(a);}",
+      "program": {
+        "seq": {
+          "left": {
+            "assn": {
+              "dst": "a",
+              "src": {
+                "array": [
+                  {
+                    "const": 10
+                  }
+                ]
+              }
+            }
+          },
+          "right": {
+            "seq": {
+              "left": {
+                "set": {
+                  "dst": {
+                    "var": "a"
+                  },
+                  "idx": {
+                    "const": 0
+                  },
+                  "value": {
+                    "binop": "+",
+                    "left": {
+                      "elem": {
+                        "var": "a"
+                      },
+                      "index": {
+                        "const": 0
+                      }
+                    },
+                    "right": {
+                      "const": 2
+                    }
+                  }
+                }
+              },
+              "right": {
+                "write": {
+                  "var": "a"
+                }
+              }
+            }
+          }
+        }
+      },
+      "input": "0",
+      "output": "[12]",
+      "message": ""
+    },
+    {
+      "name": "probe_index_compound_whitespace",
+      "source": "{a=[10];a[0]+ =2;write(a);}",
+      "program": {
+        "seq": {
+          "left": {
+            "assn": {
+              "dst": "a",
+              "src": {
+                "array": [
+                  {
+                    "const": 10
+                  }
+                ]
+              }
+            }
+          },
+          "right": {
+            "seq": {
+              "left": {
+                "set": {
+                  "dst": {
+                    "var": "a"
+                  },
+                  "idx": {
+                    "const": 0
+                  },
+                  "value": {
+                    "binop": "+",
+                    "left": {
+                      "elem": {
+                        "var": "a"
+                      },
+                      "index": {
+                        "const": 0
+                      }
+                    },
+                    "right": {
+                      "const": 2
+                    }
+                  }
+                }
+              },
+              "right": {
+                "write": {
+                  "var": "a"
+                }
+              }
+            }
+          }
+        }
+      },
+      "input": "0",
+      "output": "[12]",
+      "message": ""
+    },
+    {
+      "name": "probe_string_compound",
+      "source": "{s=\"ab\";s[0]+=1;write(s);}",
+      "program": {
+        "seq": {
+          "left": {
+            "assn": {
+              "dst": "s",
+              "src": {
+                "string": "ab"
+              }
+            }
+          },
+          "right": {
+            "seq": {
+              "left": {
+                "set": {
+                  "dst": {
+                    "var": "s"
+                  },
+                  "idx": {
+                    "const": 0
+                  },
+                  "value": {
+                    "binop": "+",
+                    "left": {
+                      "elem": {
+                        "var": "s"
+                      },
+                      "index": {
+                        "const": 0
+                      }
+                    },
+                    "right": {
+                      "const": 1
+                    }
+                  }
+                }
+              },
+              "right": {
+                "write": {
+                  "var": "s"
+                }
+              }
+            }
+          }
+        }
+      },
+      "input": "0",
+      "output": "bb",
+      "message": ""
+    },
+    {
+      "name": "probe_empty_input",
+      "source": "{write(1);}",
+      "program": {
+        "write": {
+          "const": 1
+        }
+      },
+      "input": "0",
+      "output": "1",
+      "message": ""
+    },
+    {
+      "name": "probe_strings_content_equality",
+      "source": "{write(\"ab\"==\"ab\");write(\"ab\"!=\"ac\");write(\"ab\"<\"b\");}",
+      "program": {
+        "seq": {
+          "left": {
+            "write": {
+              "binop": "==",
+              "left": {
+                "string": "ab"
+              },
+              "right": {
+                "string": "ab"
+              }
+            }
+          },
+          "right": {
+            "seq": {
+              "left": {
+                "write": {
+                  "binop": "!=",
+                  "left": {
+                    "string": "ab"
+                  },
+                  "right": {
+                    "string": "ac"
+                  }
+                }
+              },
+              "right": {
+                "write": {
+                  "binop": "<",
+                  "left": {
+                    "string": "ab"
+                  },
+                  "right": {
+                    "string": "b"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "input": "0",
+      "output": "1; 1; 1",
+      "message": ""
+    },
+    {
+      "name": "probe_array_deep_equality",
+      "source": "{write([1,\"a\",[2]]==[1,\"a\",[2]]);write([1,2]==[1,3]);}",
+      "program": {
+        "seq": {
+          "left": {
+            "write": {
+              "binop": "==",
+              "left": {
+                "array": [
+                  {
+                    "const": 1
+                  },
+                  {
+                    "string": "a"
+                  },
+                  {
+                    "array": [
+                      {
+                        "const": 2
+                      }
+                    ]
+                  }
+                ]
+              },
+              "right": {
+                "array": [
+                  {
+                    "const": 1
+                  },
+                  {
+                    "string": "a"
+                  },
+                  {
+                    "array": [
+                      {
+                        "const": 2
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          },
+          "right": {
+            "write": {
+              "binop": "==",
+              "left": {
+                "array": [
+                  {
+                    "const": 1
+                  },
+                  {
+                    "const": 2
+                  }
+                ]
+              },
+              "right": {
+                "array": [
+                  {
+                    "const": 1
+                  },
+                  {
+                    "const": 3
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "input": "0",
+      "output": "1; 0",
+      "message": ""
+    },
+    {
+      "name": "probe_array_length_first_comparison",
+      "source": "{write([99]<[0,0]);write([1,2]<[9]);write([2]<[3]);}",
+      "program": {
+        "seq": {
+          "left": {
+            "write": {
+              "binop": "<",
+              "left": {
+                "array": [
+                  {
+                    "const": 99
+                  }
+                ]
+              },
+              "right": {
+                "array": [
+                  {
+                    "const": 0
+                  },
+                  {
+                    "const": 0
+                  }
+                ]
+              }
+            }
+          },
+          "right": {
+            "seq": {
+              "left": {
+                "write": {
+                  "binop": "<",
+                  "left": {
+                    "array": [
+                      {
+                        "const": 1
+                      },
+                      {
+                        "const": 2
+                      }
+                    ]
+                  },
+                  "right": {
+                    "array": [
+                      {
+                        "const": 9
+                      }
+                    ]
+                  }
+                }
+              },
+              "right": {
+                "write": {
+                  "binop": "<",
+                  "left": {
+                    "array": [
+                      {
+                        "const": 2
+                      }
+                    ]
+                  },
+                  "right": {
+                    "array": [
+                      {
+                        "const": 3
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "input": "0",
+      "output": "1; 0; 1",
+      "message": ""
+    },
+    {
+      "name": "probe_mixed_type_comparison",
+      "source": "{write(1==\"1\");}",
+      "program": {
+        "write": {
+          "binop": "==",
+          "left": {
+            "const": 1
+          },
+          "right": {
+            "string": "1"
+          }
+        }
+      },
+      "input": "0",
+      "output": "",
+      "message": "ERROR: binary operator \"=\" is applied to 1 and 1"
+    },
+    {
+      "name": "probe_mixed_array_comparison",
+      "source": "{write([1]==[\"1\"]);}",
+      "program": {
+        "write": {
+          "binop": "==",
+          "left": {
+            "array": [
+              {
+                "const": 1
+              }
+            ]
+          },
+          "right": {
+            "array": [
+              {
+                "string": "1"
+              }
+            ]
+          }
+        }
+      },
+      "input": "0",
+      "output": "",
+      "message": "ERROR: binary operator \"=\" is applied to 1 and 1"
+    },
+    {
+      "name": "probe_unequal_length_mixed_array_comparison",
+      "source": "{write([1]<[\"x\",2]);}",
+      "program": {
+        "write": {
+          "binop": "<",
+          "left": {
+            "array": [
+              {
+                "const": 1
+              }
+            ]
+          },
+          "right": {
+            "array": [
+              {
+                "string": "x"
+              },
+              {
+                "const": 2
+              }
+            ]
+          }
+        }
+      },
+      "input": "0",
+      "output": "1",
+      "message": ""
+    },
+    {
+      "name": "probe_no_string_concat",
+      "source": "{write(\"a\"+\"b\");}",
+      "program": {
+        "write": {
+          "binop": "+",
+          "left": {
+            "string": "a"
+          },
+          "right": {
+            "string": "b"
+          }
+        }
+      },
+      "input": "0",
+      "output": "",
+      "message": "ERROR: integer value expected but \"b\" given"
+    },
+    {
+      "name": "probe_no_array_concat",
+      "source": "{write([1]+[2]);}",
+      "program": {
+        "write": {
+          "binop": "+",
+          "left": {
+            "array": [
+              {
+                "const": 1
+              }
+            ]
+          },
+          "right": {
+            "array": [
+              {
+                "const": 2
+              }
+            ]
+          }
+        }
+      },
+      "input": "0",
+      "output": "",
+      "message": "ERROR: integer value expected but \"[2]\" given"
+    },
+    {
+      "name": "probe_string_condition",
+      "source": "{if(\"a\")write(1);else write(0);}",
+      "program": {
+        "if": {
+          "cond": {
+            "string": "a"
+          },
+          "then": {
+            "write": {
+              "const": 1
+            }
+          },
+          "else": {
+            "write": {
+              "const": 0
+            }
+          }
+        }
+      },
+      "input": "0",
+      "output": "",
+      "message": "ERROR: integer value expected but \"a\" given"
+    },
+    {
+      "name": "probe_array_logic",
+      "source": "{write([1]&&1);}",
+      "program": {
+        "write": {
+          "binop": "&&",
+          "left": {
+            "array": [
+              {
+                "const": 1
+              }
+            ]
+          },
+          "right": {
+            "const": 1
+          }
+        }
+      },
+      "input": "0",
+      "output": "",
+      "message": "ERROR: integer value expected but \"[1]\" given"
+    },
+    {
+      "name": "probe_rebind_type",
+      "source": "{a=1;a=\"hi\";a=[a,2];write(a);}",
+      "program": {
+        "seq": {
+          "left": {
+            "assn": {
+              "dst": "a",
+              "src": {
+                "const": 1
+              }
+            }
+          },
+          "right": {
+            "seq": {
+              "left": {
+                "assn": {
+                  "dst": "a",
+                  "src": {
+                    "string": "hi"
+                  }
+                }
+              },
+              "right": {
+                "seq": {
+                  "left": {
+                    "assn": {
+                      "dst": "a",
+                      "src": {
+                        "array": [
+                          {
+                            "var": "a"
+                          },
+                          {
+                            "const": 2
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  "right": {
+                    "write": {
+                      "var": "a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "input": "0",
+      "output": "[hi; 2]",
+      "message": ""
+    },
+    {
+      "name": "probe_temporary_set",
+      "source": "{[1,2][0]=9;write(1);}",
+      "program": {
+        "seq": {
+          "left": {
+            "set": {
+              "dst": {
+                "array": [
+                  {
+                    "const": 1
+                  },
+                  {
+                    "const": 2
+                  }
+                ]
+              },
+              "idx": {
+                "const": 0
+              },
+              "value": {
+                "const": 9
+              }
+            }
+          },
+          "right": {
+            "write": {
+              "const": 1
+            }
+          }
+        }
+      },
+      "input": "0",
+      "output": "1",
+      "message": ""
+    },
+    {
+      "name": "probe_parenthesized_set",
+      "source": "{a=[1];(a)[0]=9;write(a);}",
+      "program": {
+        "seq": {
+          "left": {
+            "assn": {
+              "dst": "a",
+              "src": {
+                "array": [
+                  {
+                    "const": 1
+                  }
+                ]
+              }
+            }
+          },
+          "right": {
+            "seq": {
+              "left": {
+                "set": {
+                  "dst": {
+                    "var": "a"
+                  },
+                  "idx": {
+                    "const": 0
+                  },
+                  "value": {
+                    "const": 9
+                  }
+                }
+              },
+              "right": {
+                "write": {
+                  "var": "a"
+                }
+              }
+            }
+          }
+        }
+      },
+      "input": "0",
+      "output": "[9]",
+      "message": ""
+    },
+    {
+      "name": "probe_replacement_preserves_old_alias",
+      "source": "{a=[1];b=a;a=[2];b[0]=9;write(a);write(b);}",
+      "program": {
+        "seq": {
+          "left": {
+            "assn": {
+              "dst": "a",
+              "src": {
+                "array": [
+                  {
+                    "const": 1
+                  }
+                ]
+              }
+            }
+          },
+          "right": {
+            "seq": {
+              "left": {
+                "assn": {
+                  "dst": "b",
+                  "src": {
+                    "var": "a"
+                  }
+                }
+              },
+              "right": {
+                "seq": {
+                  "left": {
+                    "assn": {
+                      "dst": "a",
+                      "src": {
+                        "array": [
+                          {
+                            "const": 2
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  "right": {
+                    "seq": {
+                      "left": {
+                        "set": {
+                          "dst": {
+                            "var": "b"
+                          },
+                          "idx": {
+                            "const": 0
+                          },
+                          "value": {
+                            "const": 9
+                          }
+                        }
+                      },
+                      "right": {
+                        "seq": {
+                          "left": {
+                            "write": {
+                              "var": "a"
+                            }
+                          },
+                          "right": {
+                            "write": {
+                              "var": "b"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "input": "0",
+      "output": "[2]; [9]",
+      "message": ""
+    },
+    {
+      "name": "probe_output_alias_observed_later",
+      "source": "{a=[1];write(a);a[0]=9;write(a);}",
+      "program": {
+        "seq": {
+          "left": {
+            "assn": {
+              "dst": "a",
+              "src": {
+                "array": [
+                  {
+                    "const": 1
+                  }
+                ]
+              }
+            }
+          },
+          "right": {
+            "seq": {
+              "left": {
+                "write": {
+                  "var": "a"
+                }
+              },
+              "right": {
+                "seq": {
+                  "left": {
+                    "set": {
+                      "dst": {
+                        "var": "a"
+                      },
+                      "idx": {
+                        "const": 0
+                      },
+                      "value": {
+                        "const": 9
+                      }
+                    }
+                  },
+                  "right": {
+                    "write": {
+                      "var": "a"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "input": "0",
+      "output": "[9]; [9]",
+      "message": ""
+    },
+    {
+      "name": "probe_output_string_observed_later",
+      "source": "{s=\"ab\";write(s);s[0]=90;write(s);}",
+      "program": {
+        "seq": {
+          "left": {
+            "assn": {
+              "dst": "s",
+              "src": {
+                "string": "ab"
+              }
+            }
+          },
+          "right": {
+            "seq": {
+              "left": {
+                "write": {
+                  "var": "s"
+                }
+              },
+              "right": {
+                "seq": {
+                  "left": {
+                    "set": {
+                      "dst": {
+                        "var": "s"
+                      },
+                      "idx": {
+                        "const": 0
+                      },
+                      "value": {
+                        "const": 90
+                      }
+                    }
+                  },
+                  "right": {
+                    "write": {
+                      "var": "s"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "input": "0",
+      "output": "Zb; Zb",
+      "message": ""
+    },
+    {
+      "name": "probe_binary_error_order",
+      "source": "{write(left+right);}",
+      "program": {
+        "write": {
+          "binop": "+",
+          "left": {
+            "var": "left"
+          },
+          "right": {
+            "var": "right"
+          }
+        }
+      },
+      "input": "0",
+      "output": "",
+      "message": "ERROR: variable \"right\" is undefined"
+    },
+    {
+      "name": "probe_element_error_order",
+      "source": "{write(base[index]);}",
+      "program": {
+        "write": {
+          "elem": {
+            "var": "base"
+          },
+          "index": {
+            "var": "index"
+          }
+        }
+      },
+      "input": "0",
+      "output": "",
+      "message": "ERROR: variable \"index\" is undefined"
+    },
+    {
+      "name": "probe_set_error_order",
+      "source": "{base[index]=value;}",
+      "program": {
+        "set": {
+          "dst": {
+            "var": "base"
+          },
+          "idx": {
+            "var": "index"
+          },
+          "value": {
+            "var": "value"
+          }
+        }
+      },
+      "input": "0",
+      "output": "",
+      "message": "ERROR: variable \"value\" is undefined"
+    },
+    {
+      "name": "probe_array_element_error_order",
+      "source": "{write([left,right]);}",
+      "program": {
+        "write": {
+          "array": [
+            {
+              "var": "left"
+            },
+            {
+              "var": "right"
+            }
+          ]
+        }
+      },
+      "input": "0",
+      "output": "",
+      "message": "ERROR: variable \"left\" is undefined"
+    },
+    {
+      "name": "probe_index_compound_error_order",
+      "source": "{base[index]+=value;}",
+      "program": {
+        "set": {
+          "dst": {
+            "var": "base"
+          },
+          "idx": {
+            "var": "index"
+          },
+          "value": {
+            "binop": "+",
+            "left": {
+              "elem": {
+                "var": "base"
+              },
+              "index": {
+                "var": "index"
+              }
+            },
+            "right": {
+              "var": "value"
+            }
+          }
+        }
+      },
+      "input": "0",
+      "output": "",
+      "message": "ERROR: variable \"value\" is undefined"
+    },
+    {
+      "name": "probe_integer_control",
+      "source": "{read(x);write(x+1);}",
+      "program": {
+        "seq": {
+          "left": {
+            "read": "x"
+          },
+          "right": {
+            "write": {
+              "binop": "+",
+              "left": {
+                "var": "x"
+              },
+              "right": {
+                "const": 1
+              }
+            }
+          }
+        }
+      },
+      "input": "5",
+      "output": "6",
+      "message": ""
+    },
+    {
+      "name": "probe_read_integer_array",
+      "source": "{read(a);write(a);write(a.length);write(a[0]);}",
+      "program": {
+        "seq": {
+          "left": {
+            "read": "a"
+          },
+          "right": {
+            "seq": {
+              "left": {
+                "write": {
+                  "var": "a"
+                }
+              },
+              "right": {
+                "seq": {
+                  "left": {
+                    "write": {
+                      "length": {
+                        "var": "a"
+                      }
+                    }
+                  },
+                  "right": {
+                    "write": {
+                      "elem": {
+                        "var": "a"
+                      },
+                      "index": {
+                        "const": 0
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "input": "[1,2]",
+      "output": "[1; 2]; 2; 1",
+      "message": ""
+    },
+    {
+      "name": "probe_read_nested_array",
+      "source": "{read(a);write(a);}",
+      "program": {
+        "seq": {
+          "left": {
+            "read": "a"
+          },
+          "right": {
+            "write": {
+              "var": "a"
+            }
+          }
+        }
+      },
+      "input": "[[1,2],[3]]",
+      "output": "[[1; 2]; [3]]",
+      "message": ""
+    },
+    {
+      "name": "probe_read_array_sm",
+      "source": "{read(a);write(a);write(a==a);}",
+      "program": {
+        "seq": {
+          "left": {
+            "read": "a"
+          },
+          "right": {
+            "seq": {
+              "left": {
+                "write": {
+                  "var": "a"
+                }
+              },
+              "right": {
+                "write": {
+                  "binop": "==",
+                  "left": {
+                    "var": "a"
+                  },
+                  "right": {
+                    "var": "a"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "input": "[1,2]",
+      "output": "[1; 2]; 1",
+      "message": ""
+    },
+    {
+      "name": "probe_read_integer_array_index_sm",
+      "source": "{read(a);write(a[0]);}",
+      "program": {
+        "seq": {
+          "left": {
+            "read": "a"
+          },
+          "right": {
+            "write": {
+              "elem": {
+                "var": "a"
+              },
+              "index": {
+                "const": 0
+              }
+            }
+          }
+        }
+      },
+      "input": "[1,2]",
+      "output": "1",
+      "message": ""
+    },
+    {
+      "name": "probe_source_array_with_empty_string",
+      "source": "{write([1,\"\",2]);}",
+      "program": {
+        "write": {
+          "array": [
+            {
+              "const": 1
+            },
+            {
+              "string": ""
+            },
+            {
+              "const": 2
+            }
+          ]
+        }
+      },
+      "input": "0",
+      "output": "[1; ; 2]",
+      "message": ""
+    },
+    {
+      "name": "probe_source_array_with_quote",
+      "source": "{write([1,\"\"\"\",2]);}",
+      "program": {
+        "write": {
+          "array": [
+            {
+              "const": 1
+            },
+            {
+              "string": "\""
+            },
+            {
+              "const": 2
+            }
+          ]
+        }
+      },
+      "input": "0",
+      "output": "[1; \"; 2]",
+      "message": ""
+    },
+    {
+      "name": "probe_output_before_error",
+      "source": "{write(1);write(a);}",
+      "program": {
+        "seq": {
+          "left": {
+            "write": {
+              "const": 1
+            }
+          },
+          "right": {
+            "write": {
+              "var": "a"
+            }
+          }
+        }
+      },
+      "input": "0",
+      "output": "",
+      "message": "ERROR: variable \"a\" is undefined"
+    },
+    {
+      "name": "probe_set_index_error_order",
+      "source": "{base[index]=0;}",
+      "program": {
+        "set": {
+          "dst": {
+            "var": "base"
+          },
+          "idx": {
+            "var": "index"
+          },
+          "value": {
+            "const": 0
+          }
+        }
+      },
+      "input": "0",
+      "output": "",
+      "message": "ERROR: variable \"index\" is undefined"
+    },
+    {
+      "name": "probe_negative_after_upper_bound",
+      "source": "{s=\"a\";s[1]=256;}",
+      "program": {
+        "seq": {
+          "left": {
+            "assn": {
+              "dst": "s",
+              "src": {
+                "string": "a"
+              }
+            }
+          },
+          "right": {
+            "set": {
+              "dst": {
+                "var": "s"
+              },
+              "idx": {
+                "const": 1
+              },
+              "value": {
+                "const": 256
+              }
+            }
+          }
+        }
+      },
+      "input": "0",
+      "output": "",
+      "message": "ERROR: index 1 is out of bounds [0, 1)"
+    },
+    {
+      "name": "probe_set_type_before_index",
+      "source": "{s=\"a\";s[1]=\"x\";}",
+      "program": {
+        "seq": {
+          "left": {
+            "assn": {
+              "dst": "s",
+              "src": {
+                "string": "a"
+              }
+            }
+          },
+          "right": {
+            "set": {
+              "dst": {
+                "var": "s"
+              },
+              "idx": {
+                "const": 1
+              },
+              "value": {
+                "string": "x"
+              }
+            }
+          }
+        }
+      },
+      "input": "0",
+      "output": "",
+      "message": "ERROR: index 1 is out of bounds [0, 1)"
+    },
+    {
+      "name": "extra_invalid_utf8",
+      "source": "{s=\"a\";s[0]=255;write(s);}",
+      "program": {
+        "seq": {
+          "left": {
+            "assn": {
+              "dst": "s",
+              "src": {
+                "string": "a"
+              }
+            }
+          },
+          "right": {
+            "seq": {
+              "left": {
+                "set": {
+                  "dst": {
+                    "var": "s"
+                  },
+                  "idx": {
+                    "const": 0
+                  },
+                  "value": {
+                    "const": 255
+                  }
+                }
+              },
+              "right": {
+                "write": {
+                  "var": "s"
+                }
+              }
+            }
+          }
+        }
+      },
+      "input": "0",
+      "output": "�",
+      "message": ""
+    },
+    {
+      "name": "extra_truncated_utf8",
+      "source": "{s=\"ab\";s[0]=226;s[1]=130;write(s);}",
+      "program": {
+        "seq": {
+          "left": {
+            "assn": {
+              "dst": "s",
+              "src": {
+                "string": "ab"
+              }
+            }
+          },
+          "right": {
+            "seq": {
+              "left": {
+                "set": {
+                  "dst": {
+                    "var": "s"
+                  },
+                  "idx": {
+                    "const": 0
+                  },
+                  "value": {
+                    "const": 226
+                  }
+                }
+              },
+              "right": {
+                "seq": {
+                  "left": {
+                    "set": {
+                      "dst": {
+                        "var": "s"
+                      },
+                      "idx": {
+                        "const": 1
+                      },
+                      "value": {
+                        "const": 130
+                      }
+                    }
+                  },
+                  "right": {
+                    "write": {
+                      "var": "s"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "input": "0",
+      "output": "�",
+      "message": ""
+    },
+    {
+      "name": "extra_invalid_utf8_sequence",
+      "source": "{s=\"abc\";s[0]=224;s[1]=128;s[2]=128;write(s);}",
+      "program": {
+        "seq": {
+          "left": {
+            "assn": {
+              "dst": "s",
+              "src": {
+                "string": "abc"
+              }
+            }
+          },
+          "right": {
+            "seq": {
+              "left": {
+                "set": {
+                  "dst": {
+                    "var": "s"
+                  },
+                  "idx": {
+                    "const": 0
+                  },
+                  "value": {
+                    "const": 224
+                  }
+                }
+              },
+              "right": {
+                "seq": {
+                  "left": {
+                    "set": {
+                      "dst": {
+                        "var": "s"
+                      },
+                      "idx": {
+                        "const": 1
+                      },
+                      "value": {
+                        "const": 128
+                      }
+                    }
+                  },
+                  "right": {
+                    "seq": {
+                      "left": {
+                        "set": {
+                          "dst": {
+                            "var": "s"
+                          },
+                          "idx": {
+                            "const": 2
+                          },
+                          "value": {
+                            "const": 128
+                          }
+                        }
+                      },
+                      "right": {
+                        "write": {
+                          "var": "s"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "input": "0",
+      "output": "���",
+      "message": ""
+    },
+    {
+      "name": "extra_bom",
+      "source": "{write(\"﻿hello\");}",
+      "program": {
+        "write": {
+          "string": "﻿hello"
+        }
+      },
+      "input": "0",
+      "output": "hello",
+      "message": ""
+    },
+    {
+      "name": "extra_bom_after_output",
+      "source": "{write(1);write(\"﻿hello\");}",
+      "program": {
+        "seq": {
+          "left": {
+            "write": {
+              "const": 1
+            }
+          },
+          "right": {
+            "write": {
+              "string": "﻿hello"
+            }
+          }
+        }
+      },
+      "input": "0",
+      "output": "1; ﻿hello",
+      "message": ""
+    },
+    {
+      "name": "extra_bom_in_diagnostic",
+      "source": "{if(\"﻿hello\")skip;}",
+      "program": {
+        "if": {
+          "cond": {
+            "string": "﻿hello"
+          },
+          "then": "skip",
+          "else": "skip"
+        }
+      },
+      "input": "0",
+      "output": "",
+      "message": "ERROR: integer value expected but \"﻿hello\" given"
+    },
+    {
+      "name": "extra_consecutive_invalid_bytes",
+      "source": "{s=\"ab\";s[0]=255;s[1]=255;write(s);}",
+      "program": {
+        "seq": {
+          "left": {
+            "assn": {
+              "dst": "s",
+              "src": {
+                "string": "ab"
+              }
+            }
+          },
+          "right": {
+            "seq": {
+              "left": {
+                "set": {
+                  "dst": {
+                    "var": "s"
+                  },
+                  "idx": {
+                    "const": 0
+                  },
+                  "value": {
+                    "const": 255
+                  }
+                }
+              },
+              "right": {
+                "seq": {
+                  "left": {
+                    "set": {
+                      "dst": {
+                        "var": "s"
+                      },
+                      "idx": {
+                        "const": 1
+                      },
+                      "value": {
+                        "const": 255
+                      }
+                    }
+                  },
+                  "right": {
+                    "write": {
+                      "var": "s"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "input": "0",
+      "output": "��",
+      "message": ""
+    },
+    {
+      "name": "extra_nul_byte",
+      "source": "{s=\"a\";s[0]=0;write(s);}",
+      "program": {
+        "seq": {
+          "left": {
+            "assn": {
+              "dst": "s",
+              "src": {
+                "string": "a"
+              }
+            }
+          },
+          "right": {
+            "seq": {
+              "left": {
+                "set": {
+                  "dst": {
+                    "var": "s"
+                  },
+                  "idx": {
+                    "const": 0
+                  },
+                  "value": {
+                    "const": 0
+                  }
+                }
+              },
+              "right": {
+                "write": {
+                  "var": "s"
+                }
+              }
+            }
+          }
+        }
+      },
+      "input": "0",
+      "output": "\u0000",
+      "message": ""
+    },
+    {
+      "name": "extra_get_integer_before_index_type",
+      "source": "{write(1[\"x\"]);}",
+      "program": {
+        "write": {
+          "elem": {
+            "const": 1
+          },
+          "index": {
+            "string": "x"
+          }
+        }
+      },
+      "input": "0",
+      "output": "",
+      "message": "ERROR: integer value expected but \"x\" given"
+    },
+    {
+      "name": "extra_get_base_error_before_index_type",
+      "source": "{write(base[\"x\"]);}",
+      "program": {
+        "write": {
+          "elem": {
+            "var": "base"
+          },
+          "index": {
+            "string": "x"
+          }
+        }
+      },
+      "input": "0",
+      "output": "",
+      "message": "ERROR: variable \"base\" is undefined"
+    },
+    {
+      "name": "extra_set_integer_target",
+      "source": "{a=1;a[0]=2;}",
+      "program": {
+        "seq": {
+          "left": {
+            "assn": {
+              "dst": "a",
+              "src": {
+                "const": 1
+              }
+            }
+          },
+          "right": {
+            "set": {
+              "dst": {
+                "var": "a"
+              },
+              "idx": {
+                "const": 0
+              },
+              "value": {
+                "const": 2
+              }
+            }
+          }
+        }
+      },
+      "input": "0",
+      "output": "",
+      "message": "ERROR: array/string value expected but \"1\" is given"
+    },
+    {
+      "name": "extra_set_index_type",
+      "source": "{a=[1];a[\"x\"]=2;}",
+      "program": {
+        "seq": {
+          "left": {
+            "assn": {
+              "dst": "a",
+              "src": {
+                "array": [
+                  {
+                    "const": 1
+                  }
+                ]
+              }
+            }
+          },
+          "right": {
+            "set": {
+              "dst": {
+                "var": "a"
+              },
+              "idx": {
+                "string": "x"
+              },
+              "value": {
+                "const": 2
+              }
+            }
+          }
+        }
+      },
+      "input": "0",
+      "output": "",
+      "message": "ERROR: integer value expected but \"x\" given"
+    },
+    {
+      "name": "extra_binary_left_eval_before_right_type",
+      "source": "{write(missing+\"x\");}",
+      "program": {
+        "write": {
+          "binop": "+",
+          "left": {
+            "var": "missing"
+          },
+          "right": {
+            "string": "x"
+          }
+        }
+      },
+      "input": "0",
+      "output": "",
+      "message": "ERROR: variable \"missing\" is undefined"
+    },
+    {
+      "name": "extra_all_comparisons",
+      "source": "{write(1<=1);write(2>=3);write(\"b\">\"a\");write([2]!=[3]);write([2]<=[3]);}",
+      "program": {
+        "seq": {
+          "left": {
+            "write": {
+              "binop": "<=",
+              "left": {
+                "const": 1
+              },
+              "right": {
+                "const": 1
+              }
+            }
+          },
+          "right": {
+            "seq": {
+              "left": {
+                "write": {
+                  "binop": ">=",
+                  "left": {
+                    "const": 2
+                  },
+                  "right": {
+                    "const": 3
+                  }
+                }
+              },
+              "right": {
+                "seq": {
+                  "left": {
+                    "write": {
+                      "binop": ">",
+                      "left": {
+                        "string": "b"
+                      },
+                      "right": {
+                        "string": "a"
+                      }
+                    }
+                  },
+                  "right": {
+                    "seq": {
+                      "left": {
+                        "write": {
+                          "binop": "!=",
+                          "left": {
+                            "array": [
+                              {
+                                "const": 2
+                              }
+                            ]
+                          },
+                          "right": {
+                            "array": [
+                              {
+                                "const": 3
+                              }
+                            ]
+                          }
+                        }
+                      },
+                      "right": {
+                        "write": {
+                          "binop": "<=",
+                          "left": {
+                            "array": [
+                              {
+                                "const": 2
+                              }
+                            ]
+                          },
+                          "right": {
+                            "array": [
+                              {
+                                "const": 3
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "input": "0",
+      "output": "1; 0; 1; 1; 1",
+      "message": ""
+    },
+    {
+      "name": "extra_mismatched_ne",
+      "source": "{write(1!=\"a\");}",
+      "program": {
+        "write": {
+          "binop": "!=",
+          "left": {
+            "const": 1
+          },
+          "right": {
+            "string": "a"
+          }
+        }
+      },
+      "input": "0",
+      "output": "",
+      "message": "ERROR: binary operator \"<>\" is applied to 1 and a"
+    },
+    {
+      "name": "extra_comparison_stops_early",
+      "source": "{write([1,\"a\"]<[2,0]);}",
+      "program": {
+        "write": {
+          "binop": "<",
+          "left": {
+            "array": [
+              {
+                "const": 1
+              },
+              {
+                "string": "a"
+              }
+            ]
+          },
+          "right": {
+            "array": [
+              {
+                "const": 2
+              },
+              {
+                "const": 0
+              }
+            ]
+          }
+        }
+      },
+      "input": "0",
+      "output": "1",
+      "message": ""
+    },
+    {
+      "name": "extra_array_compare_length",
+      "source": "{write([1,2]>[9]);}",
+      "program": {
+        "write": {
+          "binop": ">",
+          "left": {
+            "array": [
+              {
+                "const": 1
+              },
+              {
+                "const": 2
+              }
+            ]
+          },
+          "right": {
+            "array": [
+              {
+                "const": 9
+              }
+            ]
+          }
+        }
+      },
+      "input": "0",
+      "output": "1",
+      "message": ""
+    },
+    {
+      "name": "extra_string_mod_type",
+      "source": "{write(1%\"x\");}",
+      "program": {
+        "write": {
+          "binop": "%",
+          "left": {
+            "const": 1
+          },
+          "right": {
+            "string": "x"
+          }
+        }
+      },
+      "input": "0",
+      "output": "",
+      "message": "ERROR: integer value expected but \"x\" given"
+    },
+    {
+      "name": "extra_utf8_string_order",
+      "source": "{write(\"я\">\"z\");}",
+      "program": {
+        "write": {
+          "binop": ">",
+          "left": {
+            "string": "я"
+          },
+          "right": {
+            "string": "z"
+          }
+        }
+      },
+      "input": "0",
+      "output": "1",
+      "message": ""
+    },
+    {
+      "name": "extra_quote_in_diagnostic",
+      "source": "{write(\"a\"\"b\"+1);}",
+      "program": {
+        "write": {
+          "binop": "+",
+          "left": {
+            "string": "a\"b"
+          },
+          "right": {
+            "const": 1
+          }
+        }
+      },
+      "input": "0",
+      "output": "",
+      "message": "ERROR: integer value expected but \"a\"b\" given"
+    },
+    {
+      "name": "extra_line_in_diagnostic",
+      "source": "{if(\"a\nb\")skip;}",
+      "program": {
+        "if": {
+          "cond": {
+            "string": "a\nb"
+          },
+          "then": "skip",
+          "else": "skip"
+        }
+      },
+      "input": "0",
+      "output": "",
+      "message": "ERROR: integer value expected but \"a\nb\" given"
+    },
+    {
+      "name": "extra_input_comments",
+      "source": "{read(a);read(b);write(a);write(b);}",
+      "program": {
+        "seq": {
+          "left": {
+            "read": "a"
+          },
+          "right": {
+            "seq": {
+              "left": {
+                "read": "b"
+              },
+              "right": {
+                "seq": {
+                  "left": {
+                    "write": {
+                      "var": "a"
+                    }
+                  },
+                  "right": {
+                    "write": {
+                      "var": "b"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "input": "1, (* a (* b *) *) 2 -- end",
+      "output": "1; 2",
+      "message": ""
+    }
+  ]
+}
