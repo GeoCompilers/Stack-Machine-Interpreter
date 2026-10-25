@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"stack-machine-interpreter/internal/runtime"
 )
 
 type fields map[string]json.RawMessage
@@ -52,7 +53,7 @@ func decodeExpression(data json.RawMessage) (*expression, error) {
 		}
 		e.kind = "binop"
 		e.text, err = scalar[string](f["binop"])
-		if err == nil && !validOperator(e.text) {
+		if err == nil && !runtime.ValidOperator(e.text) {
 			err = fmt.Errorf("AST: unknown operator %q", e.text)
 		}
 		if err == nil {

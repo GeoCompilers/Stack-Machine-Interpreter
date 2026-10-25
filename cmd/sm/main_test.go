@@ -57,7 +57,7 @@ func TestDiagnosticPrintedOnce(t *testing.T) {
 	if code := run([]string{program, input}, &stdout, &stderr); code != 1 {
 		t.Fatalf("exit code %d", code)
 	}
-	if stdout.Len() != 0 || strings.Count(stderr.String(), "stack underflow") != 1 || strings.Count(stderr.String(), "\n") != 1 {
+	if stdout.Len() != 0 || strings.Count(stderr.String(), "ERROR: stack exhausted") != 1 || strings.Count(stderr.String(), "\n") != 1 {
 		t.Fatalf("stdout=%q stderr=%q", stdout.String(), stderr.String())
 	}
 }
@@ -79,4 +79,27 @@ func writeFile(t *testing.T, dir, name, data string) string {
 		t.Fatal(err)
 	}
 	return path
+}
+
+func TestAggregateCLI(t *testing.T) {
+	dir := t.TempDir()
+	program := writeFile(t, dir, "code.json", `["READ",{"ST":"a"},{"LD":"a"},"WRITE",{"LD":"a"},{"CONST":1},{"CONST":90},"SET",{"LD":"a"},"LENGTH","WRITE"]`)
+	input := writeFile(t, dir, "input.txt", `"abc"`)
+	var stdout, stderr bytes.Buffer
+	if status := run([]string{"-code", program, "-input", input}, &stdout, &stderr); status != 0 || stdout.String() != "aZc; 3" || stderr.Len() != 0 {
+		t.Fatalf("status=%d stdout=%q stderr=%q", status, stdout.String(), stderr.String())
+	}
+	input = writeFile(t, dir, "bad-input.txt", "1,")
+	stdout.Reset()
+	stderr.Reset()
+	if status := run([]string{program, input}, &stdout, &stderr); status != 1 || stdout.Len() != 0 || !strings.HasPrefix(stderr.String(), "Input error:") || strings.Count(stderr.String(), "\n") != 1 {
+		t.Fatalf("status=%d stdout=%q stderr=%q", status, stdout.String(), stderr.String())
+	}
+	program = writeFile(t, dir, "bad-program.json", `[{"CONST":7},"WRITE",{"STRING":"x"},{"CONST":1},"ELEM"]`)
+	input = writeFile(t, dir, "empty-input.txt", "")
+	stdout.Reset()
+	stderr.Reset()
+	if status := run([]string{program, input}, &stdout, &stderr); status != 1 || stdout.Len() != 0 || stderr.String() != "ERROR: index 1 is out of bounds [0, 1)\n" {
+		t.Fatalf("status=%d stdout=%q stderr=%q", status, stdout.String(), stderr.String())
+	}
 }

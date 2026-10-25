@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math"
+	"stack-machine-interpreter/internal/runtime"
 )
 
 type instruction struct {
@@ -25,7 +26,7 @@ func NewStackMachine(code []byte) (*StackMachine, error) {
 		return nil, fmt.Errorf("too many instructions")
 	}
 	machine := &StackMachine{
-		memory:       make(map[string]int32),
+		memory:       make(map[string]runtime.Value),
 		instructions: make([]instruction, len(raw)),
 		labels:       make(map[string]int32),
 	}
@@ -60,13 +61,15 @@ func parseInstruction(data []byte) (instruction, error) {
 		return instruction{}, err
 	}
 	if opcode, ok := token.(string); ok {
-		if opcode != "READ" && opcode != "WRITE" {
+		switch opcode {
+		case "READ", "WRITE", "LENGTH", "ELEM", "SET":
+		default:
 			return instruction{}, fmt.Errorf("unknown instruction %q", opcode)
 		}
 		return instruction{opcode: opcode}, nil
 	}
 	if token != json.Delim('{') || !decoder.More() {
-		return instruction{}, fmt.Errorf("expected READ, WRITE or a single-key object")
+		return instruction{}, fmt.Errorf("expected a no-operand instruction or a single-key object")
 	}
 	key, err := decoder.Token()
 	if err != nil {
@@ -88,9 +91,18 @@ func parseInstruction(data []byte) (instruction, error) {
 
 func parseOperand(opcode string, data []byte) (instruction, error) {
 	inst := instruction{opcode: opcode}
-	if opcode == "CONST" {
+	if opcode == "CONST" || opcode == "ARRAY" {
 		if bytes.Equal(bytes.TrimSpace(data), []byte("null")) || json.Unmarshal(data, &inst.value) != nil {
-			return instruction{}, fmt.Errorf("CONST requires an int32 JSON integer")
+			return instruction{}, fmt.Errorf("%s requires an int32 JSON integer", opcode)
+		}
+		if opcode == "ARRAY" && inst.value < 0 {
+			return instruction{}, fmt.Errorf("ARRAY requires a nonnegative count")
+		}
+		return inst, nil
+	}
+	if opcode == "STRING" {
+		if bytes.Equal(bytes.TrimSpace(data), []byte("null")) || json.Unmarshal(data, &inst.operand) != nil {
+			return instruction{}, fmt.Errorf("STRING requires a JSON string")
 		}
 		return inst, nil
 	}
@@ -102,7 +114,7 @@ func parseOperand(opcode string, data []byte) (instruction, error) {
 	if err := json.Unmarshal(data, &inst.operand); err != nil || inst.operand == "" {
 		return instruction{}, fmt.Errorf("%s requires a nonempty string", opcode)
 	}
-	if opcode == "BINOP" && !validOperator(inst.operand) {
+	if opcode == "BINOP" && !runtime.ValidOperator(inst.operand) {
 		return instruction{}, fmt.Errorf("unknown operator %q", inst.operand)
 	}
 	return inst, nil

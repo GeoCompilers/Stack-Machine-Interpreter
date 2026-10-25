@@ -1,6 +1,9 @@
 package compiler
 
-import "fmt"
+import (
+	"fmt"
+	"math"
+)
 
 type generator struct {
 	instructions []any
@@ -53,28 +56,21 @@ func (g *generator) compileStatement(node statement, exitLabel string) (bool, er
 		}
 		g.emit("WRITE")
 	case assignmentStatement:
-		if value.operator != "" {
-			g.emitString("LD", value.name)
-		}
 		if err := g.compileExpression(value.value); err != nil {
 			return false, err
 		}
-		if value.operator != "" {
-			g.emitString("BINOP", value.operator)
-		}
 		g.emitString("ST", value.name)
+	case setStatement:
+		for _, operand := range []expression{value.object, value.index, value.value} {
+			if err := g.compileExpression(operand); err != nil {
+				return false, err
+			}
+		}
+		g.emit("SET")
 	case whileStatement:
 		return false, g.compileLoop(value.condition, value.body, true)
 	case doStatement:
 		return false, g.compileLoop(value.condition, value.body, false)
-	case forStatement:
-		return g.compileBlock(blockStatement{statements: []statement{
-			value.initial,
-			whileStatement{
-				condition: value.condition,
-				body:      blockStatement{statements: []statement{value.body, value.post}},
-			},
-		}}, exitLabel)
 	case ifStatement:
 		return g.compileIf(value, exitLabel)
 	case blockStatement:
@@ -137,6 +133,31 @@ func (g *generator) compileExpression(node expression) error {
 		g.emitConst(value.value)
 	case variableExpression:
 		g.emitString("LD", value.name)
+	case stringExpression:
+		g.emitString("STRING", value.text)
+	case arrayExpression:
+		if len(value.elements) > math.MaxInt32 {
+			return fmt.Errorf("AST: too many array elements")
+		}
+		for _, element := range value.elements {
+			if err := g.compileExpression(element); err != nil {
+				return err
+			}
+		}
+		g.instructions = append(g.instructions, map[string]int32{"ARRAY": int32(len(value.elements))})
+	case lengthExpression:
+		if err := g.compileExpression(value.object); err != nil {
+			return err
+		}
+		g.emit("LENGTH")
+	case elementExpression:
+		if err := g.compileExpression(value.object); err != nil {
+			return err
+		}
+		if err := g.compileExpression(value.index); err != nil {
+			return err
+		}
+		g.emit("ELEM")
 	case binaryExpression:
 		if err := g.compileExpression(value.left); err != nil {
 			return err

@@ -6,6 +6,8 @@ import (
 	"errors"
 	"io"
 	"os"
+	"stack-machine-interpreter/internal/compiler"
+	"stack-machine-interpreter/internal/stackmachine"
 	"strings"
 	"sync"
 	"testing"
@@ -29,8 +31,22 @@ func TestWebReference(t *testing.T) {
 	if len(corpus.Cases) < 80 {
 		t.Fatalf("reference corpus too small: %d", len(corpus.Cases))
 	}
+	changes, err := os.ReadFile("../../tests/testdata/interpreter/sm_expectations.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var expectations map[string]string
+	if err := json.Unmarshal(changes, &expectations); err != nil {
+		t.Fatal(err)
+	}
+	if len(expectations) != 8 {
+		t.Fatal("expected eight explicit differences from the old eval reference")
+	}
 	for _, tc := range corpus.Cases {
 		t.Run(tc.Name, func(t *testing.T) {
+			if message, ok := expectations[tc.Name]; ok {
+				tc.Message = message
+			}
 			var out bytes.Buffer
 			err := Run(tc.Program, strings.NewReader(tc.Input), &out)
 			if tc.Message != "" {
@@ -75,6 +91,25 @@ func runProgram(t *testing.T, program any, input string) (string, error) {
 	}
 	var out bytes.Buffer
 	err = Run(data, strings.NewReader(input), &out)
+	code, compileErr := compiler.Compile(data)
+	if compileErr != nil {
+		t.Fatalf("compile: %v", compileErr)
+	}
+	sm, compileErr := stackmachine.NewStackMachine(code)
+	if compileErr != nil {
+		t.Fatalf("load compiled code: %v", compileErr)
+	}
+	var compiled bytes.Buffer
+	smErr := sm.Run(strings.NewReader(input), &compiled)
+	message := func(err error) string {
+		if err == nil {
+			return ""
+		}
+		return err.Error()
+	}
+	if compiled.String() != out.String() || message(smErr) != message(err) {
+		t.Fatalf("different routes: AST=%q / %v; SM=%q / %v", out.String(), err, compiled.String(), smErr)
+	}
 	return out.String(), err
 }
 

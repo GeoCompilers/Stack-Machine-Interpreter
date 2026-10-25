@@ -3,6 +3,7 @@ package interpreter
 import (
 	"errors"
 	"fmt"
+	"stack-machine-interpreter/internal/runtime"
 )
 
 func (m *machine) exec(s *statement) error {
@@ -76,12 +77,12 @@ func (m *machine) condition(e *expression) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	n, err := asInteger(v)
+	n, err := runtime.Integer(v)
 	return n != 0, err
 }
 
 func (m *machine) set(s *statement) error {
-	v, err := m.eval(s.value)
+	object, err := m.eval(s.object)
 	if err != nil {
 		return err
 	}
@@ -89,32 +90,9 @@ func (m *machine) set(s *statement) error {
 	if err != nil {
 		return err
 	}
-	object, err := m.eval(s.object)
+	v, err := m.eval(s.value)
 	if err != nil {
 		return err
 	}
-	i, err := asInteger(index)
-	if err != nil {
-		return err
-	}
-	if err = checkIndex(object, i, true); err != nil {
-		return err
-	}
-	switch object := object.(type) {
-	case *array:
-		object.elements[i] = v
-		return nil
-	case []byte:
-		n, err := asInteger(v)
-		if err != nil {
-			return err
-		}
-		if n < 0 || n > 255 {
-			return errors.New(`Invalid_argument("Char.chr")`)
-		}
-		object[i] = byte(n)
-		return nil
-	default:
-		return fmt.Errorf("interpreter: unsupported value %T", object)
-	}
+	return runtime.Set(object, index, v)
 }

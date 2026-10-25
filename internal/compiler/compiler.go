@@ -5,18 +5,14 @@ import (
 	"fmt"
 )
 
-func Compile(source string) ([]byte, error) {
-	tokens, err := lex(source)
-	if err != nil {
-		return nil, err
-	}
-	program, err := newParser(tokens).parseProgram()
+func Compile(programJSON []byte) ([]byte, error) {
+	program, err := decodeStatement(programJSON)
 	if err != nil {
 		return nil, err
 	}
 	generator := generator{instructions: make([]any, 0)}
 	endLabel := generator.label("end")
-	used, err := generator.compileBlock(program, endLabel)
+	used, err := generator.compileStatement(program, endLabel)
 	if err != nil {
 		return nil, err
 	}

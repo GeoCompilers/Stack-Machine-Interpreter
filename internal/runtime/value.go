@@ -1,21 +1,22 @@
-package interpreter
+package runtime
 
 import (
 	"bytes"
 	"errors"
 	"fmt"
+	"io"
 	"strconv"
 	"strings"
 	"unicode/utf8"
 )
 
-type value = any
+type Value = any
 
-type array struct{ elements []value }
+type array struct{ elements []Value }
 
 var errCycle = errors.New("ERROR: cyclic array")
 
-func format(v value, active map[*array]bool) (string, error) {
+func format(v Value, active map[*array]bool) (string, error) {
 	switch v := v.(type) {
 	case int32:
 		return strconv.FormatInt(int64(v), 10), nil
@@ -37,12 +38,12 @@ func format(v value, active map[*array]bool) (string, error) {
 		}
 		return "[" + strings.Join(elements, "; ") + "]", nil
 	default:
-		return "", fmt.Errorf("interpreter: unsupported value %T", v)
+		return "", fmt.Errorf("runtime: unsupported value %T", v)
 	}
 }
 
-func formatted(v value) (string, error) { return format(v, make(map[*array]bool)) }
-func asInteger(v value) (int32, error) {
+func formatted(v Value) (string, error) { return format(v, make(map[*array]bool)) }
+func Integer(v Value) (int32, error) {
 	if n, ok := v.(int32); ok {
 		return n, nil
 	}
@@ -53,31 +54,27 @@ func asInteger(v value) (int32, error) {
 	return 0, fmt.Errorf("ERROR: integer value expected but \"%s\" given", text)
 }
 
-func length(v value, setting bool) (int, error) {
+func Length(v Value) (int32, error) {
 	switch v := v.(type) {
 	case []byte:
-		return len(v), nil
+		return int32(len(v)), nil
 	case *array:
-		return len(v.elements), nil
+		return int32(len(v.elements)), nil
 	default:
 		text, err := formatted(v)
 		if err != nil {
 			return 0, err
 		}
-		extra := ""
-		if setting {
-			extra = "is "
-		}
-		return 0, fmt.Errorf("ERROR: array/string value expected but \"%s\" %sgiven", text, extra)
+		return 0, fmt.Errorf("ERROR: array/string value expected but \"%s\" is given", text)
 	}
 }
 
-func checkIndex(v value, index int32, setting bool) error {
-	n, err := length(v, setting)
+func checkIndex(v Value, index int32) error {
+	n, err := Length(v)
 	if err != nil {
 		return err
 	}
-	if index < 0 || int64(index) >= int64(n) {
+	if index < 0 || index >= n {
 		return fmt.Errorf("ERROR: index %d is out of bounds [0, %d)", index, n)
 	}
 	return nil
@@ -85,7 +82,7 @@ func checkIndex(v value, index int32, setting bool) error {
 
 type arrayPair struct{ left, right *array }
 
-func compare(op string, left, right value, active map[arrayPair]bool) (int, error) {
+func compare(op string, left, right Value, active map[arrayPair]bool) (int, error) {
 	switch l := left.(type) {
 	case int32:
 		if r, ok := right.(int32); ok {
@@ -135,14 +132,14 @@ func compare(op string, left, right value, active map[arrayPair]bool) (int, erro
 	return 0, fmt.Errorf("ERROR: binary operator \"%s\" is applied to %s and %s", op, l, r)
 }
 
-func validOperator(op string) bool {
+func ValidOperator(op string) bool {
 	switch op {
 	case "+", "-", "*", "/", "%", "==", "!=", "<", "<=", ">", ">=", "&&", "!!":
 		return true
 	}
 	return false
 }
-func binary(op string, left, right value) (value, error) {
+func Binary(op string, left, right Value) (Value, error) {
 	switch op {
 	case "==", "!=", "<", "<=", ">", ">=":
 		diagnosticOp := op
@@ -176,11 +173,11 @@ func binary(op string, left, right value) (value, error) {
 		}
 		return int32(0), nil
 	}
-	r, err := asInteger(right)
+	r, err := Integer(right)
 	if err != nil {
 		return nil, err
 	}
-	l, err := asInteger(left)
+	l, err := Integer(left)
 	if err != nil {
 		return nil, err
 	}
@@ -210,7 +207,7 @@ func binary(op string, left, right value) (value, error) {
 		}
 		return int32(0), nil
 	}
-	return nil, fmt.Errorf("AST: unknown operator %q", op)
+	return nil, fmt.Errorf("unknown operator %q", op)
 }
 
 func decodeText(raw string) string {
@@ -231,4 +228,85 @@ func decodeText(raw string) string {
 		raw = raw[size:]
 	}
 	return out.String()
+}
+
+func NewString(text string) Value { return []byte(text) }
+
+func NewArray(elements []Value) Value {
+	return &array{elements: append([]Value(nil), elements...)}
+}
+
+func Element(object, index Value) (Value, error) {
+	i, err := Integer(index)
+	if err != nil {
+		return nil, err
+	}
+	if err := checkIndex(object, i); err != nil {
+		return nil, err
+	}
+	switch object := object.(type) {
+	case []byte:
+		return int32(object[i]), nil
+	case *array:
+		return object.elements[i], nil
+	default:
+		return nil, fmt.Errorf("unsupported value %T", object)
+	}
+}
+
+func Set(object, index, v Value) error {
+	i, err := Integer(index)
+	if err != nil {
+		return err
+	}
+	if err := checkIndex(object, i); err != nil {
+		return err
+	}
+	switch object := object.(type) {
+	case *array:
+		object.elements[i] = v
+	case []byte:
+		n, err := Integer(v)
+		if err != nil {
+			return err
+		}
+		if n < 0 || n > 255 {
+			return errors.New(`Invalid_argument("Char.chr")`)
+		}
+		object[i] = byte(n)
+	default:
+		return fmt.Errorf("unsupported value %T", object)
+	}
+	return nil
+}
+
+func NormalizeError(err error) error {
+	text := decodeText(err.Error())
+	if text == err.Error() {
+		return err
+	}
+	return errors.New(text)
+}
+
+func WriteOutput(output io.Writer, values []Value) error {
+	results := make([]string, len(values))
+	for i, v := range values {
+		var err error
+		results[i], err = formatted(v)
+		if err != nil {
+			return err
+		}
+	}
+	text := decodeText(strings.Join(results, "; "))
+	if text == "" {
+		return nil
+	}
+	n, err := io.WriteString(output, text)
+	if err != nil {
+		return fmt.Errorf("write output: %w", err)
+	}
+	if n != len(text) {
+		return fmt.Errorf("write output: %w", io.ErrShortWrite)
+	}
+	return nil
 }

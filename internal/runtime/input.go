@@ -1,7 +1,8 @@
-package interpreter
+package runtime
 
 import (
 	"fmt"
+	"io"
 	"strconv"
 )
 
@@ -10,7 +11,7 @@ type inputParser struct {
 	pos  int
 }
 
-func parseInput(text string) ([]value, error) {
+func parseInput(text string) ([]Value, error) {
 	p := inputParser{text: text}
 	if err := p.space(); err != nil {
 		return nil, err
@@ -65,8 +66,8 @@ func (p *inputParser) starts(s string) bool {
 	return len(p.text)-p.pos >= len(s) && p.text[p.pos:p.pos+len(s)] == s
 }
 
-func (p *inputParser) list(array bool) ([]value, error) {
-	var result []value
+func (p *inputParser) list(array bool) ([]Value, error) {
+	var result []Value
 	if array && p.pos < len(p.text) && p.text[p.pos] == ']' {
 		p.pos++
 		return result, nil
@@ -98,7 +99,7 @@ func (p *inputParser) list(array bool) ([]value, error) {
 	}
 }
 
-func (p *inputParser) value() (value, error) {
+func (p *inputParser) value() (Value, error) {
 	if p.pos == len(p.text) {
 		return nil, p.fail("expected a value")
 	}
@@ -145,4 +146,12 @@ func (p *inputParser) value() (value, error) {
 		}
 		return int32(n), nil
 	}
+}
+
+func ReadInput(input io.Reader) ([]Value, error) {
+	data, err := io.ReadAll(input)
+	if err != nil {
+		return nil, fmt.Errorf("read input: %w", err)
+	}
+	return parseInput(string(data))
 }

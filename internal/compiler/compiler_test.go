@@ -5,160 +5,146 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 	"testing"
 
 	"stack-machine-interpreter/internal/compiler"
+	"stack-machine-interpreter/internal/interpreter"
 	"stack-machine-interpreter/internal/stackmachine"
 )
 
-type sourceCase struct {
-	Name   string `json:"name"`
-	Source string `json:"source"`
-	Input  string `json:"input"`
-	Output string `json:"output"`
-	Error  string `json:"error"`
+type astCase struct {
+	Name         string          `json:"name"`
+	Program      json.RawMessage `json:"program"`
+	Instructions json.RawMessage `json:"instructions"`
+	Input        string          `json:"input"`
+	Output       string          `json:"output"`
+	Message      string          `json:"message"`
+	Group        string          `json:"group"`
+	Counts       map[string]int  `json:"counts"`
+	SharedExit   bool            `json:"sharedExit"`
 }
 
-func TestCompileReferenceSourceCases(t *testing.T) {
-	data, err := os.ReadFile(filepath.Join("..", "..", "tests", "testdata", "sources.json"))
+func loadCases(t *testing.T, filename string) []astCase {
+	t.Helper()
+	data, err := os.ReadFile(filepath.Join("..", "..", "tests", "testdata", filename))
 	if err != nil {
 		t.Fatal(err)
 	}
-	var cases []sourceCase
-	if err := json.Unmarshal(data, &cases); err != nil {
+	var corpus struct {
+		Cases []astCase `json:"cases"`
+	}
+	if err := json.Unmarshal(data, &corpus); err != nil {
 		t.Fatal(err)
 	}
-	for _, test := range cases {
+	if len(corpus.Cases) == 0 {
+		t.Fatal("empty AST corpus")
+	}
+	return corpus.Cases
+}
+
+func continuationCases(t *testing.T, group string) []astCase {
+	t.Helper()
+	var selected []astCase
+	for _, c := range loadCases(t, "compiler_ast.json") {
+		if c.Group == group {
+			selected = append(selected, c)
+		}
+	}
+	if len(selected) == 0 {
+		t.Fatal("missing continuation cases")
+	}
+	return selected
+}
+
+func TestCompileReferenceASTCases(t *testing.T) {
+	changes, err := os.ReadFile("../../tests/testdata/interpreter/sm_expectations.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var expectations map[string]string
+	if err := json.Unmarshal(changes, &expectations); err != nil {
+		t.Fatal(err)
+	}
+	count := 0
+	for _, test := range loadCases(t, "interpreter/reference.json") {
+		count++
+		if message, ok := expectations[test.Name]; ok {
+			test.Message = message
+		}
 		t.Run(test.Name, func(t *testing.T) {
-			program, err := compiler.Compile(test.Source)
+			program, err := compiler.Compile(test.Program)
 			if err != nil {
 				t.Fatalf("compile: %v", err)
 			}
 			machine, err := stackmachine.NewStackMachine(program)
 			if err != nil {
-				t.Fatalf("generated invalid program: %v\n%s", err, program)
+				t.Fatalf("invalid instructions: %v\n%s", err, program)
 			}
-			input := parseInput(t, test.Input)
-			var stdout, stderr bytes.Buffer
-			err = machine.Run(input, &stdout, &stderr)
-			if test.Error != "" {
-				causes := map[string]string{
-					"undefined_variable": "unknown variable",
-					"input_exhausted":    "input exhausted",
-					"division_by_zero":   "division by zero",
+			var stdout, direct bytes.Buffer
+			err = machine.Run(strings.NewReader(test.Input), &stdout)
+			directErr := interpreter.Run(test.Program, strings.NewReader(test.Input), &direct)
+			if test.Message != "" {
+				if err == nil || err.Error() != test.Message || directErr == nil || directErr.Error() != test.Message {
+					t.Fatalf("SM=%v, interpreter=%v, want=%q", err, directErr, test.Message)
 				}
-				cause, ok := causes[test.Error]
-				if !ok {
-					t.Fatalf("unknown error category %q", test.Error)
-				}
-				if err == nil || !strings.Contains(err.Error(), cause) {
-					t.Fatalf("expected runtime error %q; got %v; output=%q", cause, err, stdout.String())
-				}
-				if stderr.String() != err.Error()+"\n" {
-					t.Fatalf("diagnostic=%q, want %q", stderr.String(), err.Error()+"\n")
+				if stdout.Len() != 0 || direct.Len() != 0 {
+					t.Fatal("output on failure")
 				}
 				return
 			}
-			if err != nil {
-				t.Fatalf("run: %v; diagnostic=%q", err, stderr.String())
+			if err != nil || directErr != nil {
+				t.Fatalf("SM=%v, interpreter=%v", err, directErr)
 			}
-			if stdout.String() != test.Output {
-				t.Fatalf("output=%q, want %q", stdout.String(), test.Output)
+			want := test.Output
+			if stdout.String() != want || direct.String() != test.Output {
+				t.Fatalf("SM=%q, interpreter=%q, want=%q", stdout.String(), direct.String(), test.Output)
 			}
 		})
 	}
+	if count != 127 {
+		t.Fatalf("tested %d reference ASTs, want 127", count)
+	}
 }
 
-func TestCompileRejectsInvalidSource(t *testing.T) {
+func TestCompileRejectsInvalidAST(t *testing.T) {
 	cases := []string{
-		"{}",
-		"{write(1)",
-		"{x=2147483648;}",
-		"{(* unclosed }",
-		"{if(1) else skip;}",
+		"", "null", "{}", "[]", `"unknown"`, `{write(1);}`, `"skip" {}`,
+		`{"read":null}`, `{"read":1}`, `{"read":""}`, `{"write":{"var":""}}`,
+		`{"write":{"const":null}}`, `{"write":{"const":2147483648}}`,
+		`{"write":{"const":1.5}}`, `{"write":{"unknown":1}}`,
+		`{"write":{"binop":"?","left":{"const":1},"right":{"const":2}}}`,
+		`{"write":{"binop":"+","left":{"const":1}}}`,
+		`{"write":{"binop":"+","left":{"const":1},"right":{"const":2},"extra":0}}`,
+		`{"seq":{"left":"skip"}}`, `{"seq":{"left":"skip","right":null}}`,
+		`{"assn":{"src":{"const":1}}}`, `{"assn":{"dst":"x","src":null}}`,
+		`{"if":{"cond":{"const":1},"then":"skip"}}`,
+		`{"if":{"cond":{"const":1},"then":"skip","else":{"read":null}}}`,
+		`{"while":{"cond":{"const":1}}}`, `{"do":{"cond":null,"body":"skip"}}`,
+		`{"read":"x","write":{"const":1}}`, `{"for":{}}`,
+		`{"write":{"string":null}}`, `{"write":{"array":null}}`, `{"write":{"array":[null]}}`,
+		`{"write":{"length":null}}`, `{"write":{"elem":{"const":0}}}`,
+		`{"write":{"elem":{"const":0},"index":null}}`,
+		`{"set":{"dst":{"var":"a"},"idx":{"const":0}}}`,
+		`{"set":{"dst":null,"idx":{"const":0},"value":{"const":1}}}`,
+		`{"set":{"dst":{"var":"a"},"idx":null,"value":{"const":1}}}`,
+		`{"set":{"dst":{"var":"a"},"idx":{"const":0},"value":null}}`,
 	}
-	for _, source := range cases {
-		t.Run(source, func(t *testing.T) {
-			if _, err := compiler.Compile(source); err == nil {
-				t.Fatal("expected compile error")
+	for _, ast := range cases {
+		t.Run(ast, func(t *testing.T) {
+			program, err := compiler.Compile([]byte(ast))
+			if err == nil || program != nil {
+				t.Fatalf("expected error and no instructions, got %s, %v", program, err)
 			}
 		})
-	}
-}
-
-type syntaxCase struct {
-	Name   string `json:"name"`
-	Source string `json:"source"`
-	Valid  bool   `json:"valid"`
-	Output string `json:"output"`
-}
-
-func TestCompileSyntaxCases(t *testing.T) {
-	data, err := os.ReadFile(filepath.Join("..", "..", "tests", "testdata", "compiler_syntax.json"))
-	if err != nil {
-		t.Fatal(err)
-	}
-	var cases []syntaxCase
-	if err := json.Unmarshal(data, &cases); err != nil {
-		t.Fatal(err)
-	}
-	for _, test := range cases {
-		t.Run(test.Name, func(t *testing.T) {
-			program, err := compiler.Compile(test.Source)
-			if !test.Valid {
-				if err == nil || program != nil {
-					t.Fatalf("expected compile error and no program; err=%v program=%s", err, program)
-				}
-				return
-			}
-			if err != nil {
-				t.Fatalf("compile: %v", err)
-			}
-			machine, err := stackmachine.NewStackMachine(program)
-			if err != nil {
-				t.Fatalf("generated invalid program: %v\n%s", err, program)
-			}
-			var stdout, stderr bytes.Buffer
-			if err := machine.Run([]int32{0}, &stdout, &stderr); err != nil {
-				t.Fatalf("run: %v; diagnostic=%q", err, stderr.String())
-			}
-			if stdout.String() != test.Output || stderr.Len() != 0 {
-				t.Fatalf("output=%q, want %q; diagnostic=%q", stdout.String(), test.Output, stderr.String())
-			}
-		})
-	}
-}
-
-func TestComparisonErrorLocation(t *testing.T) {
-	program, err := compiler.Compile("{\nwrite(1 < 2 == 1);\n}")
-	if err == nil || program != nil || !strings.Contains(err.Error(), "line 2, column 13") || !strings.Contains(err.Error(), "parentheses") {
-		t.Fatalf("expected comparison diagnostic at second operator and no program; err=%v program=%s", err, program)
 	}
 }
 
 func TestCompileContinuationInstructions(t *testing.T) {
-	cases := []struct {
-		name, source         string
-		jz, jmp, jnz, labels int
-		sharedExit           bool
-	}{
-		{"plain_sequence", "{x=1; write(x); skip;}", 0, 0, 0, 0, false},
-		{"if_without_else", "{if(1)write(1);}", 1, 0, 0, 1, true},
-		{"nested_without_else", "{if(1)if(0)write(1);}", 2, 0, 0, 1, true},
-		{"nested_then", "{if(1){if(0)write(1); else write(2);} else write(3);}", 2, 2, 0, 3, true},
-		{"nested_else", "{if(1)write(1); else {if(0)write(2); else write(3);}}", 2, 2, 0, 3, true},
-		{"elif", "{if(0)write(1); elif(0)write(2); elif(1)write(3); else write(4);}", 3, 3, 0, 4, true},
-		{"adjacent_if", "{if(1)write(1); if(0)write(2);}", 2, 0, 0, 2, false},
-		{"nonfinal_nested_if", "{if(1){if(0)write(1); else write(2); write(3);} else write(4); write(5);}", 2, 2, 0, 4, false},
-		{"while", "{while(0)skip;}", 0, 1, 1, 2, false},
-		{"do_unused_condition_label", "{do skip; while(0);}", 0, 0, 1, 1, false},
-		{"do_used_condition_label", "{do if(0)skip; while(0);}", 1, 0, 1, 2, false},
-	}
+	cases := continuationCases(t, "instructions")
 	for _, test := range cases {
-		t.Run(test.name, func(t *testing.T) {
-			program, err := compiler.Compile(test.source)
+		t.Run(test.Name, func(t *testing.T) {
+			program, err := compiler.Compile(test.Program)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -189,7 +175,7 @@ func TestCompileContinuationInstructions(t *testing.T) {
 					}
 				}
 			}
-			for opcode, want := range map[string]int{"JZ": test.jz, "JMP": test.jmp, "JNZ": test.jnz, "LABEL": test.labels} {
+			for opcode, want := range test.Counts {
 				if counts[opcode] != want {
 					t.Errorf("%s count=%d, want %d\n%s", opcode, counts[opcode], want, program)
 				}
@@ -209,7 +195,7 @@ func TestCompileContinuationInstructions(t *testing.T) {
 					break
 				}
 			}
-			if test.sharedExit {
+			if test.SharedExit {
 				end, ok := instructions[len(instructions)-1].(map[string]any)
 				if !ok || end["LABEL"] == nil {
 					t.Fatalf("missing program exit label\n%s", program)
@@ -225,34 +211,10 @@ func TestCompileContinuationInstructions(t *testing.T) {
 }
 
 func TestCompileContinuationExecution(t *testing.T) {
-	cases := []struct {
-		name, source, input, output string
-	}{
-		{"nested_then_true", "{read(a); read(b); if(a){if(b)write(1); else write(2);} else write(3); write(4);}", "1,1", "1;4"},
-		{"nested_then_false", "{read(a); read(b); if(a){if(b)write(1); else write(2);} else write(3); write(4);}", "1,0", "2;4"},
-		{"outer_false", "{read(a); read(b); if(a){if(b)write(1); else write(2);} else write(3); write(4);}", "0,1", "3;4"},
-		{"nested_else_true", "{read(a); read(b); if(a)write(1); else {if(b)write(2); else write(3);} write(4);}", "0,1", "2;4"},
-		{"nested_else_false", "{read(a); read(b); if(a)write(1); else {if(b)write(2); else write(3);} write(4);}", "0,0", "3;4"},
-		{"nested_no_else_true", "{read(x); if(1){if(x)write(1);} else write(2); write(3);}", "1", "1;3"},
-		{"nested_no_else_false", "{read(x); if(1){if(x)write(1);} else write(2); write(3);}", "0", "3"},
-		{"nonfinal_nested_if_true", "{read(x); if(1){if(x)write(1); else write(2); write(3);} else write(4); write(5);}", "1", "1;3;5"},
-		{"nonfinal_nested_if_false", "{read(x); if(1){if(x)write(1); else write(2); write(3);} else write(4); write(5);}", "0", "2;3;5"},
-		{"adjacent_true_false", "{read(x); if(x)write(1); else write(2); if(x==0)write(3); else write(4); write(5);}", "1", "1;4;5"},
-		{"adjacent_false_true", "{read(x); if(x)write(1); else write(2); if(x==0)write(3); else write(4); write(5);}", "0", "2;3;5"},
-		{"elif_nested", "{read(x); if(x==0)write(0); elif(x==1){if(0)write(99); else write(1);} else write(2); write(3);}", "1", "1;3"},
-		{"while_zero", "{i=0; while(i<0)if(1)i+=1; write(i);}", "", "0"},
-		{"while_once", "{i=0; while(i<1)if(1)i+=1; write(i);}", "", "1"},
-		{"while_nested_if", "{i=0; while(i<3){i+=1; if(i==1){if(0)write(99); else write(i);} else write(i*10);} write(i);}", "", "1;20;30;3"},
-		{"do_once", "{i=0; do if(1)i+=1; while(0); write(i);}", "", "1"},
-		{"do_nested_if", "{i=0; do {i+=1; if(i==1){if(0)write(99); else write(i);} else write(i*10);} while(i<3); write(i);}", "", "1;20;30;3"},
-		{"loop_inside_if", "{if(1){i=0; while(i<2)if(1)i+=1;} else write(99); write(i);}", "", "2"},
-		{"for_zero", "{for(if(1)i=3; else i=0; i<3; i+=1)write(99); write(i);}", "", "3"},
-		{"for_conditional_clauses", "{for(if(1){if(0)i=99; else i=0;} else i=99; i<3; if(i==0)i+=1; else {if(1)i+=1; else i+=99;}){if(i==1){if(0)write(99); else write(i);} else write(i);} write(i);}", "", "0;1;2;3"},
-		{"for_body_before_post", "{for(i=0; i<3; i+=1)if(0)write(99); else write(i); write(i);}", "", "0;1;2;3"},
-	}
+	cases := continuationCases(t, "execution")
 	for _, test := range cases {
-		t.Run(test.name, func(t *testing.T) {
-			program, err := compiler.Compile(test.source)
+		t.Run(test.Name, func(t *testing.T) {
+			program, err := compiler.Compile(test.Program)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -260,30 +222,76 @@ func TestCompileContinuationExecution(t *testing.T) {
 			if err != nil {
 				t.Fatalf("invalid program: %v\n%s", err, program)
 			}
-			var stdout, stderr bytes.Buffer
-			if err := machine.Run(parseInput(t, test.input), &stdout, &stderr); err != nil {
-				t.Fatalf("run: %v; diagnostic=%q", err, stderr.String())
+			var stdout bytes.Buffer
+			if err := machine.Run(strings.NewReader(test.Input), &stdout); err != nil {
+				t.Fatalf("run: %v", err)
 			}
-			if stdout.String() != test.output || stderr.Len() != 0 {
-				t.Fatalf("output=%q, want %q; diagnostic=%q", stdout.String(), test.output, stderr.String())
+			if stdout.String() != strings.ReplaceAll(test.Output, ";", "; ") {
+				t.Fatalf("output=%q, want %q", stdout.String(), test.Output)
 			}
 		})
 	}
 }
 
-func parseInput(t *testing.T, source string) []int32 {
-	t.Helper()
-	if strings.TrimSpace(source) == "" {
-		return nil
+func TestCurrentSMReference(t *testing.T) {
+	cases := loadCases(t, "sm_reference.json")
+	if len(cases) != 149 {
+		t.Fatalf("expected 149 reference cases, got %d", len(cases))
 	}
-	items := strings.Split(source, ",")
-	input := make([]int32, len(items))
-	for index, item := range items {
-		value, err := strconv.ParseInt(strings.TrimSpace(item), 10, 32)
+	for _, test := range cases {
+		t.Run(test.Name, func(t *testing.T) {
+			compiled, err := compiler.Compile(test.Program)
+			if err != nil {
+				t.Fatal(err)
+			}
+			for _, code := range []struct {
+				name string
+				data []byte
+			}{{"compiled", compiled}, {"reference", test.Instructions}} {
+				t.Run(code.name, func(t *testing.T) {
+					machine, err := stackmachine.NewStackMachine(code.data)
+					if err != nil {
+						t.Fatal(err)
+					}
+					var out bytes.Buffer
+					err = machine.Run(strings.NewReader(test.Input), &out)
+					if test.Message == "" && err != nil || test.Message != "" && (err == nil || err.Error() != test.Message) {
+						t.Fatalf("error=%v, want %q", err, test.Message)
+					}
+					if out.String() != test.Output {
+						t.Fatalf("output=%q, want %q", out.String(), test.Output)
+					}
+				})
+			}
+			var out bytes.Buffer
+			err = interpreter.Run(test.Program, strings.NewReader(test.Input), &out)
+			if test.Message == "" && err != nil || test.Message != "" && (err == nil || err.Error() != test.Message) {
+				t.Fatalf("AST error=%v, want %q", err, test.Message)
+			}
+			if out.String() != test.Output {
+				t.Fatalf("AST output=%q, want %q", out.String(), test.Output)
+			}
+		})
+	}
+}
+
+func TestCompileAggregateInstructions(t *testing.T) {
+	for _, test := range []struct{ ast, code string }{
+		{`{"write":{"array":[{"const":1},{"string":"x"},{"array":[]}]}}`, `[{"CONST":1},{"STRING":"x"},{"ARRAY":0},{"ARRAY":3},"WRITE"]`},
+		{`{"write":{"elem":{"var":"a"},"index":{"const":2}}}`, `[{"LD":"a"},{"CONST":2},"ELEM","WRITE"]`},
+		{`{"set":{"dst":{"var":"a"},"idx":{"const":2},"value":{"string":""}}}`, `[{"LD":"a"},{"CONST":2},{"STRING":""},"SET"]`},
+		{`{"write":{"length":{"string":"я"}}}`, `[{"STRING":"я"},"LENGTH","WRITE"]`},
+	} {
+		code, err := compiler.Compile([]byte(test.ast))
 		if err != nil {
-			t.Fatalf("parse input item %d: %v", index+1, err)
+			t.Fatal(err)
 		}
-		input[index] = int32(value)
+		var compact bytes.Buffer
+		if err := json.Compact(&compact, code); err != nil {
+			t.Fatal(err)
+		}
+		if compact.String() != test.code {
+			t.Fatalf("code=%s, want %s", compact.String(), test.code)
+		}
 	}
-	return input
 }
