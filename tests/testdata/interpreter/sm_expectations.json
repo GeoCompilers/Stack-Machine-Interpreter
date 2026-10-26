@@ -1,0 +1,10 @@
+{
+  "probe_binary_error_order": "ERROR: variable \"left\" is undefined",
+  "probe_element_error_order": "ERROR: variable \"base\" is undefined",
+  "probe_set_error_order": "ERROR: variable \"base\" is undefined",
+  "probe_index_compound_error_order": "ERROR: variable \"base\" is undefined",
+  "probe_set_index_error_order": "ERROR: variable \"base\" is undefined",
+  "probe_index_integer": "ERROR: array/string value expected but \"12\" is given",
+  "probe_length_integer": "ERROR: array/string value expected but \"12\" is given",
+  "probe_length_postfix_then_index": "ERROR: array/string value expected but \"2\" is given"
+}

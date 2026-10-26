@@ -4,6 +4,10 @@ type expression interface{ expressionNode() }
 
 type literalExpression struct{ value int32 }
 type variableExpression struct{ name string }
+type stringExpression struct{ text string }
+type arrayExpression struct{ elements []expression }
+type lengthExpression struct{ object expression }
+type elementExpression struct{ object, index expression }
 type binaryExpression struct {
 	operator string
 	left     expression
@@ -12,6 +16,10 @@ type binaryExpression struct {
 
 func (literalExpression) expressionNode()  {}
 func (variableExpression) expressionNode() {}
+func (stringExpression) expressionNode()   {}
+func (arrayExpression) expressionNode()    {}
+func (lengthExpression) expressionNode()   {}
+func (elementExpression) expressionNode()  {}
 func (binaryExpression) expressionNode()   {}
 
 type statement interface{ statementNode() }
@@ -19,10 +27,10 @@ type statement interface{ statementNode() }
 type readStatement struct{ name string }
 type writeStatement struct{ value expression }
 type assignmentStatement struct {
-	name     string
-	operator string
-	value    expression
+	name  string
+	value expression
 }
+type setStatement struct{ object, index, value expression }
 type whileStatement struct {
 	condition expression
 	body      statement
@@ -30,12 +38,6 @@ type whileStatement struct {
 type doStatement struct {
 	body      statement
 	condition expression
-}
-type forStatement struct {
-	initial   statement
-	condition expression
-	post      statement
-	body      statement
 }
 type ifStatement struct {
 	condition expression
@@ -48,9 +50,9 @@ type skipStatement struct{}
 func (readStatement) statementNode()       {}
 func (writeStatement) statementNode()      {}
 func (assignmentStatement) statementNode() {}
+func (setStatement) statementNode()        {}
 func (whileStatement) statementNode()      {}
 func (doStatement) statementNode()         {}
-func (forStatement) statementNode()        {}
 func (ifStatement) statementNode()         {}
 func (blockStatement) statementNode()      {}
 func (skipStatement) statementNode()       {}

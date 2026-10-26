@@ -1,5 +1,3 @@
-// Run the original page handler with a minimal DOM, without modifying L0.js.
-// Node.js is needed only for regenerating/checking reference fixtures.
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');

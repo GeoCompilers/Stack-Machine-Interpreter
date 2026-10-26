@@ -4,49 +4,62 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"strconv"
+	"stack-machine-interpreter/internal/runtime"
 )
 
+var errStack = errors.New("ERROR: stack exhausted")
+
 type StackMachine struct {
-	stack             []int32
-	memory            map[string]int32
-	instructions      []instruction
-	isntrucionPointer int32
-	labels            map[string]int32
+	stack              []runtime.Value
+	memory             map[string]runtime.Value
+	instructions       []instruction
+	instructionPointer int32
+	labels             map[string]int32
 }
 
-func (m *StackMachine) Run(input []int32, stdout, stderr io.Writer) error {
+func (m *StackMachine) Run(input io.Reader, output io.Writer) error {
 	m.stack = nil
-	m.memory = make(map[string]int32)
-	m.isntrucionPointer = 0
-	if err := m.run(input, stdout); err != nil {
-		if writeErr := writeText(stderr, err.Error()+"\n"); writeErr != nil {
-			return errors.Join(err, fmt.Errorf("write diagnostic: %w", writeErr))
-		}
+	m.memory = make(map[string]runtime.Value)
+	m.instructionPointer = 0
+	values, err := runtime.ReadInput(input)
+	if err != nil {
 		return err
 	}
-	return nil
+	results, err := m.run(values)
+	if err != nil {
+		return runtime.NormalizeError(err)
+	}
+	return runtime.WriteOutput(output, results)
 }
 
-func (m *StackMachine) run(input []int32, stdout io.Writer) error {
+func (m *StackMachine) run(input []runtime.Value) ([]runtime.Value, error) {
 	inputIndex := 0
-	separator := ""
-	for int(m.isntrucionPointer) < len(m.instructions) {
-		inst := m.instructions[m.isntrucionPointer]
+	var output []runtime.Value
+	for int(m.instructionPointer) < len(m.instructions) {
+		inst := m.instructions[m.instructionPointer]
 		var err error
 		switch inst.opcode {
 		case "READ":
 			if inputIndex == len(input) {
-				err = fmt.Errorf("input exhausted")
+				err = errors.New("ERROR: input exhausted")
 			} else {
 				m.stack = append(m.stack, input[inputIndex])
 				inputIndex++
 			}
 		case "WRITE":
-			err = m.write(stdout, separator)
-			separator = ";"
+			var v runtime.Value
+			v, err = m.pop()
+			if err == nil {
+				output = append(output, v)
+			}
 		case "CONST":
 			m.stack = append(m.stack, inst.value)
+		case "STRING":
+			m.stack = append(m.stack, runtime.NewString(inst.operand))
+		case "ARRAY":
+			err = m.makeArray(inst.value)
+		case "LENGTH", "ELEM", "SET":
+			err = m.aggregate(inst.opcode)
 		case "LD":
 			err = m.load(inst.operand)
 		case "ST":
@@ -58,57 +71,68 @@ func (m *StackMachine) run(input []int32, stdout io.Writer) error {
 		case "LABEL":
 		}
 		if err != nil {
-			return fmt.Errorf("instruction %d (%s): %w", m.isntrucionPointer, inst.opcode, err)
+			return nil, err
 		}
-		m.isntrucionPointer++
+		m.instructionPointer++
 	}
-	return nil
+	return output, nil
 }
 
-func (m *StackMachine) pop() (int32, error) {
+func (m *StackMachine) pop() (runtime.Value, error) {
 	if len(m.stack) == 0 {
-		return 0, fmt.Errorf("stack underflow")
+		return nil, errStack
 	}
-	index := len(m.stack) - 1
-	value := m.stack[index]
-	m.stack = m.stack[:index]
-	return value, nil
+	i := len(m.stack) - 1
+	v := m.stack[i]
+	m.stack[i] = nil
+	m.stack = m.stack[:i]
+	return v, nil
 }
 
 func (m *StackMachine) load(name string) error {
-	value, exists := m.memory[name]
+	v, exists := m.memory[name]
 	if !exists {
-		return fmt.Errorf("unknown variable %q", name)
+		return fmt.Errorf("ERROR: variable \"%s\" is undefined", name)
 	}
-	m.stack = append(m.stack, value)
+	m.stack = append(m.stack, v)
 	return nil
 }
 
 func (m *StackMachine) store(name string) error {
-	value, err := m.pop()
+	v, err := m.pop()
 	if err != nil {
 		return err
 	}
-	m.memory[name] = value
+	m.memory[name] = v
 	return nil
+}
+
+func (m *StackMachine) replace(count int, value runtime.Value) {
+	i := len(m.stack) - count
+	clear(m.stack[i:])
+	m.stack = append(m.stack[:i], value)
 }
 
 func (m *StackMachine) binary(operator string) error {
 	if len(m.stack) < 2 {
-		return fmt.Errorf("stack underflow: binary operator requires two values")
+		return errStack
 	}
-	index := len(m.stack) - 2
-	value, err := calculate(operator, m.stack[index], m.stack[index+1])
+	i := len(m.stack) - 2
+	v, err := runtime.Binary(operator, m.stack[i], m.stack[i+1])
 	if err != nil {
 		return err
 	}
-	m.stack = append(m.stack[:index], value)
+	m.replace(2, v)
 	return nil
 }
 
 func (m *StackMachine) jump(opcode, label string) error {
 	if opcode != "JMP" {
-		condition, err := m.pop()
+		v, err := m.pop()
+		if err != nil {
+			return err
+		}
+		condition, err := runtime.Integer(v)
 		if err != nil {
 			return err
 		}
@@ -116,25 +140,48 @@ func (m *StackMachine) jump(opcode, label string) error {
 			return nil
 		}
 	}
-	m.isntrucionPointer = m.labels[label]
+	m.instructionPointer = m.labels[label]
 	return nil
 }
 
-func (m *StackMachine) write(stdout io.Writer, separator string) error {
-	value, err := m.pop()
+func (m *StackMachine) makeArray(count int32) error {
+	if int64(count) > int64(len(m.stack)) {
+		return errStack
+	}
+	value := runtime.NewArray(m.stack[len(m.stack)-int(count):])
+	m.replace(int(count), value)
+	return nil
+}
+
+func (m *StackMachine) aggregate(opcode string) error {
+	count := 1
+	if opcode == "ELEM" {
+		count = 2
+	} else if opcode == "SET" {
+		count = 3
+	}
+	if len(m.stack) < count {
+		return errStack
+	}
+	i := len(m.stack) - count
+	var value runtime.Value
+	var err error
+	switch opcode {
+	case "LENGTH":
+		value, err = runtime.Length(m.stack[i])
+	case "ELEM":
+		value, err = runtime.Element(m.stack[i], m.stack[i+1])
+	case "SET":
+		err = runtime.Set(m.stack[i], m.stack[i+1], m.stack[i+2])
+	}
 	if err != nil {
 		return err
 	}
-	if err := writeText(stdout, separator+strconv.FormatInt(int64(value), 10)); err != nil {
-		return fmt.Errorf("write output: %w", err)
+	if opcode == "SET" {
+		clear(m.stack[i:])
+		m.stack = m.stack[:i]
+	} else {
+		m.replace(count, value)
 	}
 	return nil
-}
-
-func writeText(writer io.Writer, text string) error {
-	n, err := io.WriteString(writer, text)
-	if err == nil && n != len(text) {
-		return io.ErrShortWrite
-	}
-	return err
 }

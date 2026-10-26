@@ -30,10 +30,6 @@ func TestGeneratorRejectsUnknownStatements(t *testing.T) {
 		{"while_condition", whileStatement{condition: unknownExpression{}, body: skip}, "expression compiler.unknownExpression"},
 		{"do_body", doStatement{body: unknown, condition: literal}, "statement compiler.unknownStatement"},
 		{"do_condition", doStatement{body: skip, condition: unknownExpression{}}, "expression compiler.unknownExpression"},
-		{"for_initial", forStatement{initial: unknown, condition: literal, post: skip, body: skip}, "statement compiler.unknownStatement"},
-		{"for_post", forStatement{initial: skip, condition: literal, post: unknown, body: skip}, "statement compiler.unknownStatement"},
-		{"for_body", forStatement{initial: skip, condition: literal, post: skip, body: unknown}, "statement compiler.unknownStatement"},
-		{"for_condition", forStatement{initial: skip, condition: unknownExpression{}, post: skip, body: skip}, "expression compiler.unknownExpression"},
 		{"if_condition", ifStatement{condition: unknownExpression{}, then: skip}, "expression compiler.unknownExpression"},
 		{"if_then", ifStatement{condition: literal, then: unknown}, "statement compiler.unknownStatement"},
 		{"if_else", ifStatement{condition: literal, then: skip, otherwise: unknown}, "statement compiler.unknownStatement"},
@@ -95,7 +91,6 @@ func TestGeneratorReportsExitLabelUsage(t *testing.T) {
 		{"nested_nonfinal_block", blockStatement{statements: []statement{blockStatement{statements: []statement{conditional}}, skip}}, false},
 		{"while", whileStatement{condition: literal, body: conditional}, false},
 		{"do", doStatement{condition: literal, body: conditional}, false},
-		{"for", forStatement{initial: conditional, condition: literal, body: conditional, post: conditional}, false},
 	}
 	for _, test := range cases {
 		t.Run(test.name, func(t *testing.T) {
