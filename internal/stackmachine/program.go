@@ -91,6 +91,19 @@ func parseInstruction(data []byte) (instruction, error) {
 
 func parseOperand(opcode string, data []byte) (instruction, error) {
 	inst := instruction{opcode: opcode}
+	if opcode == "SEXP" {
+		var operands []json.RawMessage
+		if json.Unmarshal(data, &operands) != nil || len(operands) != 2 {
+			return instruction{}, fmt.Errorf("SEXP requires [name, count]")
+		}
+		if json.Unmarshal(operands[0], &inst.operand) != nil || inst.operand == "" {
+			return instruction{}, fmt.Errorf("SEXP requires a nonempty name")
+		}
+		if bytes.Equal(bytes.TrimSpace(operands[1]), []byte("null")) || json.Unmarshal(operands[1], &inst.value) != nil || inst.value < 0 {
+			return instruction{}, fmt.Errorf("SEXP requires a nonnegative int32 count")
+		}
+		return inst, nil
+	}
 	if opcode == "CONST" || opcode == "ARRAY" {
 		if bytes.Equal(bytes.TrimSpace(data), []byte("null")) || json.Unmarshal(data, &inst.value) != nil {
 			return instruction{}, fmt.Errorf("%s requires an int32 JSON integer", opcode)

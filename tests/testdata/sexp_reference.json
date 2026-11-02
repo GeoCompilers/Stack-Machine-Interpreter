@@ -1,0 +1,3189 @@
+{
+  "reference": {
+    "url": "https://dboulytchev.github.io/eval.html",
+    "machine_url": "https://dboulytchev.github.io/sm.html",
+    "bundle_url": "https://dboulytchev.github.io/L0.js",
+    "sha256": "9536eb3ca339a92125f8cc4ddf02622391c973bcb09d60e26546c329b9254cb4"
+  },
+  "cases": [
+    {
+      "name": "pair",
+      "source": "{x=Pair(1,2);write(x);write(x[0]);write(x[1]);}",
+      "program": {
+        "seq": {
+          "left": {
+            "assn": {
+              "dst": "x",
+              "src": {
+                "sexp": "Pair",
+                "args": [
+                  {
+                    "const": 1
+                  },
+                  {
+                    "const": 2
+                  }
+                ]
+              }
+            }
+          },
+          "right": {
+            "seq": {
+              "left": {
+                "write": {
+                  "var": "x"
+                }
+              },
+              "right": {
+                "seq": {
+                  "left": {
+                    "write": {
+                      "elem": {
+                        "var": "x"
+                      },
+                      "index": {
+                        "const": 0
+                      }
+                    }
+                  },
+                  "right": {
+                    "write": {
+                      "elem": {
+                        "var": "x"
+                      },
+                      "index": {
+                        "const": 1
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "instructions": [
+        {
+          "CONST": 1
+        },
+        {
+          "CONST": 2
+        },
+        {
+          "SEXP": [
+            "Pair",
+            2
+          ]
+        },
+        {
+          "ST": "x"
+        },
+        {
+          "LD": "x"
+        },
+        "WRITE",
+        {
+          "LD": "x"
+        },
+        {
+          "CONST": 0
+        },
+        "ELEM",
+        "WRITE",
+        {
+          "LD": "x"
+        },
+        {
+          "CONST": 1
+        },
+        "ELEM",
+        "WRITE"
+      ],
+      "input": "0",
+      "output": "Pair (1, 2); 1; 2",
+      "message": "",
+      "eval": {
+        "output": "Pair (1, 2), 1, 2",
+        "message": ""
+      },
+      "sm": {
+        "output": "Pair (1, 2), 1, 2",
+        "message": ""
+      }
+    },
+    {
+      "name": "nullary",
+      "source": "{write(Leaf);}",
+      "program": {
+        "write": {
+          "sexp": "Leaf",
+          "args": []
+        }
+      },
+      "instructions": [
+        {
+          "SEXP": [
+            "Leaf",
+            0
+          ]
+        },
+        "WRITE"
+      ],
+      "input": "0",
+      "output": "Leaf",
+      "message": "",
+      "eval": {
+        "output": "Leaf",
+        "message": ""
+      },
+      "sm": {
+        "output": "Leaf",
+        "message": ""
+      }
+    },
+    {
+      "name": "unary",
+      "source": "{write(Box(42));}",
+      "program": {
+        "write": {
+          "sexp": "Box",
+          "args": [
+            {
+              "const": 42
+            }
+          ]
+        }
+      },
+      "instructions": [
+        {
+          "CONST": 42
+        },
+        {
+          "SEXP": [
+            "Box",
+            1
+          ]
+        },
+        "WRITE"
+      ],
+      "input": "0",
+      "output": "Box (42)",
+      "message": "",
+      "eval": {
+        "output": "Box (42)",
+        "message": ""
+      },
+      "sm": {
+        "output": "Box (42)",
+        "message": ""
+      }
+    },
+    {
+      "name": "nested",
+      "source": "{write(Tree(Pair(1,2),Leaf,Box(3)));}",
+      "program": {
+        "write": {
+          "sexp": "Tree",
+          "args": [
+            {
+              "sexp": "Pair",
+              "args": [
+                {
+                  "const": 1
+                },
+                {
+                  "const": 2
+                }
+              ]
+            },
+            {
+              "sexp": "Leaf",
+              "args": []
+            },
+            {
+              "sexp": "Box",
+              "args": [
+                {
+                  "const": 3
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "instructions": [
+        {
+          "CONST": 1
+        },
+        {
+          "CONST": 2
+        },
+        {
+          "SEXP": [
+            "Pair",
+            2
+          ]
+        },
+        {
+          "SEXP": [
+            "Leaf",
+            0
+          ]
+        },
+        {
+          "CONST": 3
+        },
+        {
+          "SEXP": [
+            "Box",
+            1
+          ]
+        },
+        {
+          "SEXP": [
+            "Tree",
+            3
+          ]
+        },
+        "WRITE"
+      ],
+      "input": "0",
+      "output": "Tree (Pair (1, 2), Leaf, Box (3))",
+      "message": "",
+      "eval": {
+        "output": "Tree (Pair (1, 2), Leaf, Box (3))",
+        "message": ""
+      },
+      "sm": {
+        "output": "Tree (Pair (1, 2), Leaf, Box (3))",
+        "message": ""
+      }
+    },
+    {
+      "name": "empty_list",
+      "source": "{write({});}",
+      "program": {
+        "write": {
+          "sexp": "nil",
+          "args": []
+        }
+      },
+      "instructions": [
+        {
+          "SEXP": [
+            "nil",
+            0
+          ]
+        },
+        "WRITE"
+      ],
+      "input": "0",
+      "output": "{}",
+      "message": "",
+      "eval": {
+        "output": "{}",
+        "message": ""
+      },
+      "sm": {
+        "output": "{}",
+        "message": ""
+      }
+    },
+    {
+      "name": "singleton",
+      "source": "{write({1});}",
+      "program": {
+        "write": {
+          "sexp": "cons",
+          "args": [
+            {
+              "const": 1
+            },
+            {
+              "sexp": "nil",
+              "args": []
+            }
+          ]
+        }
+      },
+      "instructions": [
+        {
+          "CONST": 1
+        },
+        {
+          "SEXP": [
+            "nil",
+            0
+          ]
+        },
+        {
+          "SEXP": [
+            "cons",
+            2
+          ]
+        },
+        "WRITE"
+      ],
+      "input": "0",
+      "output": "{1}",
+      "message": "",
+      "eval": {
+        "output": "{1}",
+        "message": ""
+      },
+      "sm": {
+        "output": "{1}",
+        "message": ""
+      }
+    },
+    {
+      "name": "list",
+      "source": "{write({1,2,3,4});}",
+      "program": {
+        "write": {
+          "sexp": "cons",
+          "args": [
+            {
+              "const": 1
+            },
+            {
+              "sexp": "cons",
+              "args": [
+                {
+                  "const": 2
+                },
+                {
+                  "sexp": "cons",
+                  "args": [
+                    {
+                      "const": 3
+                    },
+                    {
+                      "sexp": "cons",
+                      "args": [
+                        {
+                          "const": 4
+                        },
+                        {
+                          "sexp": "nil",
+                          "args": []
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "instructions": [
+        {
+          "CONST": 1
+        },
+        {
+          "CONST": 2
+        },
+        {
+          "CONST": 3
+        },
+        {
+          "CONST": 4
+        },
+        {
+          "SEXP": [
+            "nil",
+            0
+          ]
+        },
+        {
+          "SEXP": [
+            "cons",
+            2
+          ]
+        },
+        {
+          "SEXP": [
+            "cons",
+            2
+          ]
+        },
+        {
+          "SEXP": [
+            "cons",
+            2
+          ]
+        },
+        {
+          "SEXP": [
+            "cons",
+            2
+          ]
+        },
+        "WRITE"
+      ],
+      "input": "0",
+      "output": "{1, 2, 3, 4}",
+      "message": "",
+      "eval": {
+        "output": "{1, 2, 3, 4}",
+        "message": ""
+      },
+      "sm": {
+        "output": "{1, 2, 3, 4}",
+        "message": ""
+      }
+    },
+    {
+      "name": "nested_lists",
+      "source": "{write({{1,2},{},{3}});}",
+      "program": {
+        "write": {
+          "sexp": "cons",
+          "args": [
+            {
+              "sexp": "cons",
+              "args": [
+                {
+                  "const": 1
+                },
+                {
+                  "sexp": "cons",
+                  "args": [
+                    {
+                      "const": 2
+                    },
+                    {
+                      "sexp": "nil",
+                      "args": []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "sexp": "cons",
+              "args": [
+                {
+                  "sexp": "nil",
+                  "args": []
+                },
+                {
+                  "sexp": "cons",
+                  "args": [
+                    {
+                      "sexp": "cons",
+                      "args": [
+                        {
+                          "const": 3
+                        },
+                        {
+                          "sexp": "nil",
+                          "args": []
+                        }
+                      ]
+                    },
+                    {
+                      "sexp": "nil",
+                      "args": []
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "instructions": [
+        {
+          "CONST": 1
+        },
+        {
+          "CONST": 2
+        },
+        {
+          "SEXP": [
+            "nil",
+            0
+          ]
+        },
+        {
+          "SEXP": [
+            "cons",
+            2
+          ]
+        },
+        {
+          "SEXP": [
+            "cons",
+            2
+          ]
+        },
+        {
+          "SEXP": [
+            "nil",
+            0
+          ]
+        },
+        {
+          "CONST": 3
+        },
+        {
+          "SEXP": [
+            "nil",
+            0
+          ]
+        },
+        {
+          "SEXP": [
+            "cons",
+            2
+          ]
+        },
+        {
+          "SEXP": [
+            "nil",
+            0
+          ]
+        },
+        {
+          "SEXP": [
+            "cons",
+            2
+          ]
+        },
+        {
+          "SEXP": [
+            "cons",
+            2
+          ]
+        },
+        {
+          "SEXP": [
+            "cons",
+            2
+          ]
+        },
+        "WRITE"
+      ],
+      "input": "0",
+      "output": "{{1, 2}, {}, {3}}",
+      "message": "",
+      "eval": {
+        "output": "{{1, 2}, {}, {3}}",
+        "message": ""
+      },
+      "sm": {
+        "output": "{{1, 2}, {}, {3}}",
+        "message": ""
+      }
+    },
+    {
+      "name": "list_constructors",
+      "source": "{write({Pair(1,2),Leaf,{3,4}});}",
+      "program": {
+        "write": {
+          "sexp": "cons",
+          "args": [
+            {
+              "sexp": "Pair",
+              "args": [
+                {
+                  "const": 1
+                },
+                {
+                  "const": 2
+                }
+              ]
+            },
+            {
+              "sexp": "cons",
+              "args": [
+                {
+                  "sexp": "Leaf",
+                  "args": []
+                },
+                {
+                  "sexp": "cons",
+                  "args": [
+                    {
+                      "sexp": "cons",
+                      "args": [
+                        {
+                          "const": 3
+                        },
+                        {
+                          "sexp": "cons",
+                          "args": [
+                            {
+                              "const": 4
+                            },
+                            {
+                              "sexp": "nil",
+                              "args": []
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "sexp": "nil",
+                      "args": []
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "instructions": [
+        {
+          "CONST": 1
+        },
+        {
+          "CONST": 2
+        },
+        {
+          "SEXP": [
+            "Pair",
+            2
+          ]
+        },
+        {
+          "SEXP": [
+            "Leaf",
+            0
+          ]
+        },
+        {
+          "CONST": 3
+        },
+        {
+          "CONST": 4
+        },
+        {
+          "SEXP": [
+            "nil",
+            0
+          ]
+        },
+        {
+          "SEXP": [
+            "cons",
+            2
+          ]
+        },
+        {
+          "SEXP": [
+            "cons",
+            2
+          ]
+        },
+        {
+          "SEXP": [
+            "nil",
+            0
+          ]
+        },
+        {
+          "SEXP": [
+            "cons",
+            2
+          ]
+        },
+        {
+          "SEXP": [
+            "cons",
+            2
+          ]
+        },
+        {
+          "SEXP": [
+            "cons",
+            2
+          ]
+        },
+        "WRITE"
+      ],
+      "input": "0",
+      "output": "{Pair (1, 2), Leaf, {3, 4}}",
+      "message": "",
+      "eval": {
+        "output": "{Pair (1, 2), Leaf, {3, 4}}",
+        "message": ""
+      },
+      "sm": {
+        "output": "{Pair (1, 2), Leaf, {3, 4}}",
+        "message": ""
+      }
+    },
+    {
+      "name": "capitalized_names",
+      "source": "{write(Cons(1,Nil));}",
+      "program": {
+        "write": {
+          "sexp": "Cons",
+          "args": [
+            {
+              "const": 1
+            },
+            {
+              "sexp": "Nil",
+              "args": []
+            }
+          ]
+        }
+      },
+      "instructions": [
+        {
+          "CONST": 1
+        },
+        {
+          "SEXP": [
+            "Nil",
+            0
+          ]
+        },
+        {
+          "SEXP": [
+            "Cons",
+            2
+          ]
+        },
+        "WRITE"
+      ],
+      "input": "0",
+      "output": "Cons (1, Nil)",
+      "message": "",
+      "eval": {
+        "output": "Cons (1, Nil)",
+        "message": ""
+      },
+      "sm": {
+        "output": "Cons (1, Nil)",
+        "message": ""
+      }
+    },
+    {
+      "name": "colon",
+      "source": "{write(1:2:{});}",
+      "program": {
+        "write": {
+          "sexp": "cons",
+          "args": [
+            {
+              "const": 1
+            },
+            {
+              "sexp": "cons",
+              "args": [
+                {
+                  "const": 2
+                },
+                {
+                  "sexp": "nil",
+                  "args": []
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "instructions": [
+        {
+          "CONST": 1
+        },
+        {
+          "CONST": 2
+        },
+        {
+          "SEXP": [
+            "nil",
+            0
+          ]
+        },
+        {
+          "SEXP": [
+            "cons",
+            2
+          ]
+        },
+        {
+          "SEXP": [
+            "cons",
+            2
+          ]
+        },
+        "WRITE"
+      ],
+      "input": "0",
+      "output": "{1, 2}",
+      "message": "",
+      "eval": {
+        "output": "{1, 2}",
+        "message": ""
+      },
+      "sm": {
+        "output": "{1, 2}",
+        "message": ""
+      }
+    },
+    {
+      "name": "prepend",
+      "source": "{xs={2,3};write(1:xs);}",
+      "program": {
+        "seq": {
+          "left": {
+            "assn": {
+              "dst": "xs",
+              "src": {
+                "sexp": "cons",
+                "args": [
+                  {
+                    "const": 2
+                  },
+                  {
+                    "sexp": "cons",
+                    "args": [
+                      {
+                        "const": 3
+                      },
+                      {
+                        "sexp": "nil",
+                        "args": []
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          },
+          "right": {
+            "write": {
+              "sexp": "cons",
+              "args": [
+                {
+                  "const": 1
+                },
+                {
+                  "var": "xs"
+                }
+              ]
+            }
+          }
+        }
+      },
+      "instructions": [
+        {
+          "CONST": 2
+        },
+        {
+          "CONST": 3
+        },
+        {
+          "SEXP": [
+            "nil",
+            0
+          ]
+        },
+        {
+          "SEXP": [
+            "cons",
+            2
+          ]
+        },
+        {
+          "SEXP": [
+            "cons",
+            2
+          ]
+        },
+        {
+          "ST": "xs"
+        },
+        {
+          "CONST": 1
+        },
+        {
+          "LD": "xs"
+        },
+        {
+          "SEXP": [
+            "cons",
+            2
+          ]
+        },
+        "WRITE"
+      ],
+      "input": "0",
+      "output": "{1, 2, 3}",
+      "message": "",
+      "eval": {
+        "output": "{1, 2, 3}",
+        "message": ""
+      },
+      "sm": {
+        "output": "{1, 2, 3}",
+        "message": ""
+      }
+    },
+    {
+      "name": "list_head",
+      "source": "{write({7,8,9}[0]);}",
+      "program": {
+        "write": {
+          "elem": {
+            "sexp": "cons",
+            "args": [
+              {
+                "const": 7
+              },
+              {
+                "sexp": "cons",
+                "args": [
+                  {
+                    "const": 8
+                  },
+                  {
+                    "sexp": "cons",
+                    "args": [
+                      {
+                        "const": 9
+                      },
+                      {
+                        "sexp": "nil",
+                        "args": []
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "index": {
+            "const": 0
+          }
+        }
+      },
+      "instructions": [
+        {
+          "CONST": 7
+        },
+        {
+          "CONST": 8
+        },
+        {
+          "CONST": 9
+        },
+        {
+          "SEXP": [
+            "nil",
+            0
+          ]
+        },
+        {
+          "SEXP": [
+            "cons",
+            2
+          ]
+        },
+        {
+          "SEXP": [
+            "cons",
+            2
+          ]
+        },
+        {
+          "SEXP": [
+            "cons",
+            2
+          ]
+        },
+        {
+          "CONST": 0
+        },
+        "ELEM",
+        "WRITE"
+      ],
+      "input": "0",
+      "output": "7",
+      "message": "",
+      "eval": {
+        "output": "7",
+        "message": ""
+      },
+      "sm": {
+        "output": "7",
+        "message": ""
+      }
+    },
+    {
+      "name": "list_tail",
+      "source": "{write({7,8,9}[1]);}",
+      "program": {
+        "write": {
+          "elem": {
+            "sexp": "cons",
+            "args": [
+              {
+                "const": 7
+              },
+              {
+                "sexp": "cons",
+                "args": [
+                  {
+                    "const": 8
+                  },
+                  {
+                    "sexp": "cons",
+                    "args": [
+                      {
+                        "const": 9
+                      },
+                      {
+                        "sexp": "nil",
+                        "args": []
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "index": {
+            "const": 1
+          }
+        }
+      },
+      "instructions": [
+        {
+          "CONST": 7
+        },
+        {
+          "CONST": 8
+        },
+        {
+          "CONST": 9
+        },
+        {
+          "SEXP": [
+            "nil",
+            0
+          ]
+        },
+        {
+          "SEXP": [
+            "cons",
+            2
+          ]
+        },
+        {
+          "SEXP": [
+            "cons",
+            2
+          ]
+        },
+        {
+          "SEXP": [
+            "cons",
+            2
+          ]
+        },
+        {
+          "CONST": 1
+        },
+        "ELEM",
+        "WRITE"
+      ],
+      "input": "0",
+      "output": "{8, 9}",
+      "message": "",
+      "eval": {
+        "output": "{8, 9}",
+        "message": ""
+      },
+      "sm": {
+        "output": "{8, 9}",
+        "message": ""
+      }
+    },
+    {
+      "name": "nested_index",
+      "source": "{write(Box(Pair(4,5))[0][1]);}",
+      "program": {
+        "write": {
+          "elem": {
+            "elem": {
+              "sexp": "Box",
+              "args": [
+                {
+                  "sexp": "Pair",
+                  "args": [
+                    {
+                      "const": 4
+                    },
+                    {
+                      "const": 5
+                    }
+                  ]
+                }
+              ]
+            },
+            "index": {
+              "const": 0
+            }
+          },
+          "index": {
+            "const": 1
+          }
+        }
+      },
+      "instructions": [
+        {
+          "CONST": 4
+        },
+        {
+          "CONST": 5
+        },
+        {
+          "SEXP": [
+            "Pair",
+            2
+          ]
+        },
+        {
+          "SEXP": [
+            "Box",
+            1
+          ]
+        },
+        {
+          "CONST": 0
+        },
+        "ELEM",
+        {
+          "CONST": 1
+        },
+        "ELEM",
+        "WRITE"
+      ],
+      "input": "0",
+      "output": "5",
+      "message": "",
+      "eval": {
+        "output": "5",
+        "message": ""
+      },
+      "sm": {
+        "output": "5",
+        "message": ""
+      }
+    },
+    {
+      "name": "length",
+      "source": "{write(Pair(1,2).length);write(Leaf.length);write({1,2,3}.length);write({}.length);}",
+      "program": {
+        "seq": {
+          "left": {
+            "write": {
+              "length": {
+                "sexp": "Pair",
+                "args": [
+                  {
+                    "const": 1
+                  },
+                  {
+                    "const": 2
+                  }
+                ]
+              }
+            }
+          },
+          "right": {
+            "seq": {
+              "left": {
+                "write": {
+                  "length": {
+                    "sexp": "Leaf",
+                    "args": []
+                  }
+                }
+              },
+              "right": {
+                "seq": {
+                  "left": {
+                    "write": {
+                      "length": {
+                        "sexp": "cons",
+                        "args": [
+                          {
+                            "const": 1
+                          },
+                          {
+                            "sexp": "cons",
+                            "args": [
+                              {
+                                "const": 2
+                              },
+                              {
+                                "sexp": "cons",
+                                "args": [
+                                  {
+                                    "const": 3
+                                  },
+                                  {
+                                    "sexp": "nil",
+                                    "args": []
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  "right": {
+                    "write": {
+                      "length": {
+                        "sexp": "nil",
+                        "args": []
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "instructions": [
+        {
+          "CONST": 1
+        },
+        {
+          "CONST": 2
+        },
+        {
+          "SEXP": [
+            "Pair",
+            2
+          ]
+        },
+        "LENGTH",
+        "WRITE",
+        {
+          "SEXP": [
+            "Leaf",
+            0
+          ]
+        },
+        "LENGTH",
+        "WRITE",
+        {
+          "CONST": 1
+        },
+        {
+          "CONST": 2
+        },
+        {
+          "CONST": 3
+        },
+        {
+          "SEXP": [
+            "nil",
+            0
+          ]
+        },
+        {
+          "SEXP": [
+            "cons",
+            2
+          ]
+        },
+        {
+          "SEXP": [
+            "cons",
+            2
+          ]
+        },
+        {
+          "SEXP": [
+            "cons",
+            2
+          ]
+        },
+        "LENGTH",
+        "WRITE",
+        {
+          "SEXP": [
+            "nil",
+            0
+          ]
+        },
+        "LENGTH",
+        "WRITE"
+      ],
+      "input": "0",
+      "output": "2; 0; 2; 0",
+      "message": "",
+      "eval": {
+        "output": "2, 0, 2, 0",
+        "message": ""
+      },
+      "sm": {
+        "output": "2, 0, 2, 0",
+        "message": ""
+      }
+    },
+    {
+      "name": "mixed_arrays",
+      "source": "{write(Box([1,2],{3,4}));}",
+      "program": {
+        "write": {
+          "sexp": "Box",
+          "args": [
+            {
+              "array": [
+                {
+                  "const": 1
+                },
+                {
+                  "const": 2
+                }
+              ]
+            },
+            {
+              "sexp": "cons",
+              "args": [
+                {
+                  "const": 3
+                },
+                {
+                  "sexp": "cons",
+                  "args": [
+                    {
+                      "const": 4
+                    },
+                    {
+                      "sexp": "nil",
+                      "args": []
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "instructions": [
+        {
+          "CONST": 1
+        },
+        {
+          "CONST": 2
+        },
+        {
+          "ARRAY": 2
+        },
+        {
+          "CONST": 3
+        },
+        {
+          "CONST": 4
+        },
+        {
+          "SEXP": [
+            "nil",
+            0
+          ]
+        },
+        {
+          "SEXP": [
+            "cons",
+            2
+          ]
+        },
+        {
+          "SEXP": [
+            "cons",
+            2
+          ]
+        },
+        {
+          "SEXP": [
+            "Box",
+            2
+          ]
+        },
+        "WRITE"
+      ],
+      "input": "0",
+      "output": "Box ([1; 2], {3, 4})",
+      "message": "",
+      "eval": {
+        "output": "Box ([1, 2], {3, 4})",
+        "message": ""
+      },
+      "sm": {
+        "output": "Box ([1, 2], {3, 4})",
+        "message": ""
+      }
+    },
+    {
+      "name": "sexp_in_array",
+      "source": "{write([Pair(1,2),{3,4}]);}",
+      "program": {
+        "write": {
+          "array": [
+            {
+              "sexp": "Pair",
+              "args": [
+                {
+                  "const": 1
+                },
+                {
+                  "const": 2
+                }
+              ]
+            },
+            {
+              "sexp": "cons",
+              "args": [
+                {
+                  "const": 3
+                },
+                {
+                  "sexp": "cons",
+                  "args": [
+                    {
+                      "const": 4
+                    },
+                    {
+                      "sexp": "nil",
+                      "args": []
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "instructions": [
+        {
+          "CONST": 1
+        },
+        {
+          "CONST": 2
+        },
+        {
+          "SEXP": [
+            "Pair",
+            2
+          ]
+        },
+        {
+          "CONST": 3
+        },
+        {
+          "CONST": 4
+        },
+        {
+          "SEXP": [
+            "nil",
+            0
+          ]
+        },
+        {
+          "SEXP": [
+            "cons",
+            2
+          ]
+        },
+        {
+          "SEXP": [
+            "cons",
+            2
+          ]
+        },
+        {
+          "ARRAY": 2
+        },
+        "WRITE"
+      ],
+      "input": "0",
+      "output": "[Pair (1, 2); {3, 4}]",
+      "message": "",
+      "eval": {
+        "output": "[Pair (1, 2), {3, 4}]",
+        "message": ""
+      },
+      "sm": {
+        "output": "[Pair (1, 2), {3, 4}]",
+        "message": ""
+      }
+    },
+    {
+      "name": "string_argument",
+      "source": "{write(Box(\"hello\"));}",
+      "program": {
+        "write": {
+          "sexp": "Box",
+          "args": [
+            {
+              "string": "hello"
+            }
+          ]
+        }
+      },
+      "instructions": [
+        {
+          "STRING": "hello"
+        },
+        {
+          "SEXP": [
+            "Box",
+            1
+          ]
+        },
+        "WRITE"
+      ],
+      "input": "0",
+      "output": "Box (hello)",
+      "message": "",
+      "eval": {
+        "output": "Box (\"hello\")",
+        "message": ""
+      },
+      "sm": {
+        "output": "Box (\"hello\")",
+        "message": ""
+      }
+    },
+    {
+      "name": "alias",
+      "source": "{x=Pair(1,2);y=x;write(x);y[0]=9;write(y);}",
+      "program": {
+        "seq": {
+          "left": {
+            "assn": {
+              "dst": "x",
+              "src": {
+                "sexp": "Pair",
+                "args": [
+                  {
+                    "const": 1
+                  },
+                  {
+                    "const": 2
+                  }
+                ]
+              }
+            }
+          },
+          "right": {
+            "seq": {
+              "left": {
+                "assn": {
+                  "dst": "y",
+                  "src": {
+                    "var": "x"
+                  }
+                }
+              },
+              "right": {
+                "seq": {
+                  "left": {
+                    "write": {
+                      "var": "x"
+                    }
+                  },
+                  "right": {
+                    "seq": {
+                      "left": {
+                        "set": {
+                          "dst": {
+                            "var": "y"
+                          },
+                          "idx": {
+                            "const": 0
+                          },
+                          "value": {
+                            "const": 9
+                          }
+                        }
+                      },
+                      "right": {
+                        "write": {
+                          "var": "y"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "instructions": [
+        {
+          "CONST": 1
+        },
+        {
+          "CONST": 2
+        },
+        {
+          "SEXP": [
+            "Pair",
+            2
+          ]
+        },
+        {
+          "ST": "x"
+        },
+        {
+          "LD": "x"
+        },
+        {
+          "ST": "y"
+        },
+        {
+          "LD": "x"
+        },
+        "WRITE",
+        {
+          "LD": "y"
+        },
+        {
+          "CONST": 0
+        },
+        {
+          "CONST": 9
+        },
+        "SET",
+        {
+          "LD": "y"
+        },
+        "WRITE"
+      ],
+      "input": "0",
+      "output": "Pair (9, 2); Pair (9, 2)",
+      "message": "",
+      "eval": {
+        "output": "Pair (9, 2), Pair (9, 2)",
+        "message": ""
+      },
+      "sm": {
+        "output": "Pair (9, 2), Pair (9, 2)",
+        "message": ""
+      }
+    },
+    {
+      "name": "list_mutation",
+      "source": "{x={1,2,3};x[1][0]=8;write(x);}",
+      "program": {
+        "seq": {
+          "left": {
+            "assn": {
+              "dst": "x",
+              "src": {
+                "sexp": "cons",
+                "args": [
+                  {
+                    "const": 1
+                  },
+                  {
+                    "sexp": "cons",
+                    "args": [
+                      {
+                        "const": 2
+                      },
+                      {
+                        "sexp": "cons",
+                        "args": [
+                          {
+                            "const": 3
+                          },
+                          {
+                            "sexp": "nil",
+                            "args": []
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          },
+          "right": {
+            "seq": {
+              "left": {
+                "set": {
+                  "dst": {
+                    "elem": {
+                      "var": "x"
+                    },
+                    "index": {
+                      "const": 1
+                    }
+                  },
+                  "idx": {
+                    "const": 0
+                  },
+                  "value": {
+                    "const": 8
+                  }
+                }
+              },
+              "right": {
+                "write": {
+                  "var": "x"
+                }
+              }
+            }
+          }
+        }
+      },
+      "instructions": [
+        {
+          "CONST": 1
+        },
+        {
+          "CONST": 2
+        },
+        {
+          "CONST": 3
+        },
+        {
+          "SEXP": [
+            "nil",
+            0
+          ]
+        },
+        {
+          "SEXP": [
+            "cons",
+            2
+          ]
+        },
+        {
+          "SEXP": [
+            "cons",
+            2
+          ]
+        },
+        {
+          "SEXP": [
+            "cons",
+            2
+          ]
+        },
+        {
+          "ST": "x"
+        },
+        {
+          "LD": "x"
+        },
+        {
+          "CONST": 1
+        },
+        "ELEM",
+        {
+          "CONST": 0
+        },
+        {
+          "CONST": 8
+        },
+        "SET",
+        {
+          "LD": "x"
+        },
+        "WRITE"
+      ],
+      "input": "0",
+      "output": "{1, 8, 3}",
+      "message": "",
+      "eval": {
+        "output": "{1, 8, 3}",
+        "message": ""
+      },
+      "sm": {
+        "output": "{1, 8, 3}",
+        "message": ""
+      }
+    },
+    {
+      "name": "replace_tail",
+      "source": "{x={1};x[1]={2,3};write(x);}",
+      "program": {
+        "seq": {
+          "left": {
+            "assn": {
+              "dst": "x",
+              "src": {
+                "sexp": "cons",
+                "args": [
+                  {
+                    "const": 1
+                  },
+                  {
+                    "sexp": "nil",
+                    "args": []
+                  }
+                ]
+              }
+            }
+          },
+          "right": {
+            "seq": {
+              "left": {
+                "set": {
+                  "dst": {
+                    "var": "x"
+                  },
+                  "idx": {
+                    "const": 1
+                  },
+                  "value": {
+                    "sexp": "cons",
+                    "args": [
+                      {
+                        "const": 2
+                      },
+                      {
+                        "sexp": "cons",
+                        "args": [
+                          {
+                            "const": 3
+                          },
+                          {
+                            "sexp": "nil",
+                            "args": []
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              },
+              "right": {
+                "write": {
+                  "var": "x"
+                }
+              }
+            }
+          }
+        }
+      },
+      "instructions": [
+        {
+          "CONST": 1
+        },
+        {
+          "SEXP": [
+            "nil",
+            0
+          ]
+        },
+        {
+          "SEXP": [
+            "cons",
+            2
+          ]
+        },
+        {
+          "ST": "x"
+        },
+        {
+          "LD": "x"
+        },
+        {
+          "CONST": 1
+        },
+        {
+          "CONST": 2
+        },
+        {
+          "CONST": 3
+        },
+        {
+          "SEXP": [
+            "nil",
+            0
+          ]
+        },
+        {
+          "SEXP": [
+            "cons",
+            2
+          ]
+        },
+        {
+          "SEXP": [
+            "cons",
+            2
+          ]
+        },
+        "SET",
+        {
+          "LD": "x"
+        },
+        "WRITE"
+      ],
+      "input": "0",
+      "output": "{1, 2, 3}",
+      "message": "",
+      "eval": {
+        "output": "{1, 2, 3}",
+        "message": ""
+      },
+      "sm": {
+        "output": "{1, 2, 3}",
+        "message": ""
+      }
+    },
+    {
+      "name": "shared_tail",
+      "source": "{tail={2,3};write(Pair(1:tail,9:tail));}",
+      "program": {
+        "seq": {
+          "left": {
+            "assn": {
+              "dst": "tail",
+              "src": {
+                "sexp": "cons",
+                "args": [
+                  {
+                    "const": 2
+                  },
+                  {
+                    "sexp": "cons",
+                    "args": [
+                      {
+                        "const": 3
+                      },
+                      {
+                        "sexp": "nil",
+                        "args": []
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          },
+          "right": {
+            "write": {
+              "sexp": "Pair",
+              "args": [
+                {
+                  "sexp": "cons",
+                  "args": [
+                    {
+                      "const": 1
+                    },
+                    {
+                      "var": "tail"
+                    }
+                  ]
+                },
+                {
+                  "sexp": "cons",
+                  "args": [
+                    {
+                      "const": 9
+                    },
+                    {
+                      "var": "tail"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      },
+      "instructions": [
+        {
+          "CONST": 2
+        },
+        {
+          "CONST": 3
+        },
+        {
+          "SEXP": [
+            "nil",
+            0
+          ]
+        },
+        {
+          "SEXP": [
+            "cons",
+            2
+          ]
+        },
+        {
+          "SEXP": [
+            "cons",
+            2
+          ]
+        },
+        {
+          "ST": "tail"
+        },
+        {
+          "CONST": 1
+        },
+        {
+          "LD": "tail"
+        },
+        {
+          "SEXP": [
+            "cons",
+            2
+          ]
+        },
+        {
+          "CONST": 9
+        },
+        {
+          "LD": "tail"
+        },
+        {
+          "SEXP": [
+            "cons",
+            2
+          ]
+        },
+        {
+          "SEXP": [
+            "Pair",
+            2
+          ]
+        },
+        "WRITE"
+      ],
+      "input": "0",
+      "output": "Pair ({1, 2, 3}, {9, 2, 3})",
+      "message": "",
+      "eval": {
+        "output": "Pair ({1, 2, 3}, {9, 2, 3})",
+        "message": ""
+      },
+      "sm": {
+        "output": "Pair ({1, 2, 3}, {9, 2, 3})",
+        "message": ""
+      }
+    },
+    {
+      "name": "fresh_constructors",
+      "source": "{i=0;while(i<2){x=Pair(1,2);if(i==0)y=x;else x[0]=9;i+=1;}write(Pair(y,x));}",
+      "program": {
+        "seq": {
+          "left": {
+            "assn": {
+              "dst": "i",
+              "src": {
+                "const": 0
+              }
+            }
+          },
+          "right": {
+            "seq": {
+              "left": {
+                "while": {
+                  "cond": {
+                    "binop": "<",
+                    "left": {
+                      "var": "i"
+                    },
+                    "right": {
+                      "const": 2
+                    }
+                  },
+                  "body": {
+                    "seq": {
+                      "left": {
+                        "assn": {
+                          "dst": "x",
+                          "src": {
+                            "sexp": "Pair",
+                            "args": [
+                              {
+                                "const": 1
+                              },
+                              {
+                                "const": 2
+                              }
+                            ]
+                          }
+                        }
+                      },
+                      "right": {
+                        "seq": {
+                          "left": {
+                            "if": {
+                              "cond": {
+                                "binop": "==",
+                                "left": {
+                                  "var": "i"
+                                },
+                                "right": {
+                                  "const": 0
+                                }
+                              },
+                              "then": {
+                                "assn": {
+                                  "dst": "y",
+                                  "src": {
+                                    "var": "x"
+                                  }
+                                }
+                              },
+                              "else": {
+                                "set": {
+                                  "dst": {
+                                    "var": "x"
+                                  },
+                                  "idx": {
+                                    "const": 0
+                                  },
+                                  "value": {
+                                    "const": 9
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "right": {
+                            "assn": {
+                              "dst": "i",
+                              "src": {
+                                "binop": "+",
+                                "left": {
+                                  "var": "i"
+                                },
+                                "right": {
+                                  "const": 1
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "right": {
+                "write": {
+                  "sexp": "Pair",
+                  "args": [
+                    {
+                      "var": "y"
+                    },
+                    {
+                      "var": "x"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "instructions": [
+        {
+          "CONST": 0
+        },
+        {
+          "ST": "i"
+        },
+        {
+          "JMP": "L_while_cond_4"
+        },
+        {
+          "LABEL": "L_while_cody_3"
+        },
+        {
+          "CONST": 1
+        },
+        {
+          "CONST": 2
+        },
+        {
+          "SEXP": [
+            "Pair",
+            2
+          ]
+        },
+        {
+          "ST": "x"
+        },
+        {
+          "LD": "i"
+        },
+        {
+          "CONST": 0
+        },
+        {
+          "BINOP": "=="
+        },
+        {
+          "JZ": "L_else_7"
+        },
+        {
+          "LD": "x"
+        },
+        {
+          "ST": "y"
+        },
+        {
+          "JMP": "L_seq_6"
+        },
+        {
+          "LABEL": "L_else_7"
+        },
+        {
+          "LD": "x"
+        },
+        {
+          "CONST": 0
+        },
+        {
+          "CONST": 9
+        },
+        "SET",
+        {
+          "LABEL": "L_seq_6"
+        },
+        {
+          "LD": "i"
+        },
+        {
+          "CONST": 1
+        },
+        {
+          "BINOP": "+"
+        },
+        {
+          "ST": "i"
+        },
+        {
+          "LABEL": "L_while_cond_4"
+        },
+        {
+          "LD": "i"
+        },
+        {
+          "CONST": 2
+        },
+        {
+          "BINOP": "<"
+        },
+        {
+          "JNZ": "L_while_cody_3"
+        },
+        {
+          "LD": "y"
+        },
+        {
+          "LD": "x"
+        },
+        {
+          "SEXP": [
+            "Pair",
+            2
+          ]
+        },
+        "WRITE"
+      ],
+      "input": "0",
+      "output": "Pair (Pair (1, 2), Pair (9, 2))",
+      "message": "",
+      "eval": {
+        "output": "Pair (Pair (1, 2), Pair (9, 2))",
+        "message": ""
+      },
+      "sm": {
+        "output": "Pair (Pair (1, 2), Pair (9, 2))",
+        "message": ""
+      }
+    },
+    {
+      "name": "argument_order",
+      "source": "{write(Pair(missing,other));}",
+      "program": {
+        "write": {
+          "sexp": "Pair",
+          "args": [
+            {
+              "var": "missing"
+            },
+            {
+              "var": "other"
+            }
+          ]
+        }
+      },
+      "instructions": [
+        {
+          "LD": "missing"
+        },
+        {
+          "LD": "other"
+        },
+        {
+          "SEXP": [
+            "Pair",
+            2
+          ]
+        },
+        "WRITE"
+      ],
+      "input": "0",
+      "output": "",
+      "message": "ERROR: variable \"missing\" is undefined",
+      "eval": {
+        "output": "",
+        "message": "ERROR: variable \"missing\" is undefined"
+      },
+      "sm": {
+        "output": "",
+        "message": "ERROR: variable \"missing\" is undefined"
+      }
+    },
+    {
+      "name": "index_upper_bound",
+      "source": "{write(Pair(1,2)[2]);}",
+      "program": {
+        "write": {
+          "elem": {
+            "sexp": "Pair",
+            "args": [
+              {
+                "const": 1
+              },
+              {
+                "const": 2
+              }
+            ]
+          },
+          "index": {
+            "const": 2
+          }
+        }
+      },
+      "instructions": [
+        {
+          "CONST": 1
+        },
+        {
+          "CONST": 2
+        },
+        {
+          "SEXP": [
+            "Pair",
+            2
+          ]
+        },
+        {
+          "CONST": 2
+        },
+        "ELEM",
+        "WRITE"
+      ],
+      "input": "0",
+      "output": "",
+      "message": "ERROR: index 2 is out of bounds [0, 2)",
+      "eval": {
+        "output": "",
+        "message": "ERROR: index 2 is out of bounds [0, 2)"
+      },
+      "sm": {
+        "output": "",
+        "message": "ERROR: index 2 is out of bounds [0, 2)"
+      }
+    },
+    {
+      "name": "index_negative",
+      "source": "{write(Pair(1,2)[0-1]);}",
+      "program": {
+        "write": {
+          "elem": {
+            "sexp": "Pair",
+            "args": [
+              {
+                "const": 1
+              },
+              {
+                "const": 2
+              }
+            ]
+          },
+          "index": {
+            "binop": "-",
+            "left": {
+              "const": 0
+            },
+            "right": {
+              "const": 1
+            }
+          }
+        }
+      },
+      "instructions": [
+        {
+          "CONST": 1
+        },
+        {
+          "CONST": 2
+        },
+        {
+          "SEXP": [
+            "Pair",
+            2
+          ]
+        },
+        {
+          "CONST": 0
+        },
+        {
+          "CONST": 1
+        },
+        {
+          "BINOP": "-"
+        },
+        "ELEM",
+        "WRITE"
+      ],
+      "input": "0",
+      "output": "",
+      "message": "ERROR: index -1 is out of bounds [0, 2)",
+      "eval": {
+        "output": "",
+        "message": "ERROR: index -1 is out of bounds [0, 2)"
+      },
+      "sm": {
+        "output": "",
+        "message": "ERROR: index -1 is out of bounds [0, 2)"
+      }
+    },
+    {
+      "name": "index_nullary",
+      "source": "{write(Leaf[0]);}",
+      "program": {
+        "write": {
+          "elem": {
+            "sexp": "Leaf",
+            "args": []
+          },
+          "index": {
+            "const": 0
+          }
+        }
+      },
+      "instructions": [
+        {
+          "SEXP": [
+            "Leaf",
+            0
+          ]
+        },
+        {
+          "CONST": 0
+        },
+        "ELEM",
+        "WRITE"
+      ],
+      "input": "0",
+      "output": "",
+      "message": "ERROR: index 0 is out of bounds [0, 0)",
+      "eval": {
+        "output": "",
+        "message": "ERROR: index 0 is out of bounds [0, 0)"
+      },
+      "sm": {
+        "output": "",
+        "message": "ERROR: index 0 is out of bounds [0, 0)"
+      }
+    },
+    {
+      "name": "index_empty_list",
+      "source": "{write({}[0]);}",
+      "program": {
+        "write": {
+          "elem": {
+            "sexp": "nil",
+            "args": []
+          },
+          "index": {
+            "const": 0
+          }
+        }
+      },
+      "instructions": [
+        {
+          "SEXP": [
+            "nil",
+            0
+          ]
+        },
+        {
+          "CONST": 0
+        },
+        "ELEM",
+        "WRITE"
+      ],
+      "input": "0",
+      "output": "",
+      "message": "ERROR: index 0 is out of bounds [0, 0)",
+      "eval": {
+        "output": "",
+        "message": "ERROR: index 0 is out of bounds [0, 0)"
+      },
+      "sm": {
+        "output": "",
+        "message": "ERROR: index 0 is out of bounds [0, 0)"
+      }
+    },
+    {
+      "name": "index_type",
+      "source": "{write(Pair(1,2)[Leaf]);}",
+      "program": {
+        "write": {
+          "elem": {
+            "sexp": "Pair",
+            "args": [
+              {
+                "const": 1
+              },
+              {
+                "const": 2
+              }
+            ]
+          },
+          "index": {
+            "sexp": "Leaf",
+            "args": []
+          }
+        }
+      },
+      "instructions": [
+        {
+          "CONST": 1
+        },
+        {
+          "CONST": 2
+        },
+        {
+          "SEXP": [
+            "Pair",
+            2
+          ]
+        },
+        {
+          "SEXP": [
+            "Leaf",
+            0
+          ]
+        },
+        "ELEM",
+        "WRITE"
+      ],
+      "input": "0",
+      "output": "",
+      "message": "ERROR: integer value expected but \"Leaf\" given",
+      "eval": {
+        "output": "",
+        "message": "ERROR: integer value expected but \"Leaf\" given"
+      },
+      "sm": {
+        "output": "",
+        "message": "ERROR: integer value expected but \"Leaf\" given"
+      }
+    },
+    {
+      "name": "set_bounds",
+      "source": "{x=Pair(1,2);x[2]=9;}",
+      "program": {
+        "seq": {
+          "left": {
+            "assn": {
+              "dst": "x",
+              "src": {
+                "sexp": "Pair",
+                "args": [
+                  {
+                    "const": 1
+                  },
+                  {
+                    "const": 2
+                  }
+                ]
+              }
+            }
+          },
+          "right": {
+            "set": {
+              "dst": {
+                "var": "x"
+              },
+              "idx": {
+                "const": 2
+              },
+              "value": {
+                "const": 9
+              }
+            }
+          }
+        }
+      },
+      "instructions": [
+        {
+          "CONST": 1
+        },
+        {
+          "CONST": 2
+        },
+        {
+          "SEXP": [
+            "Pair",
+            2
+          ]
+        },
+        {
+          "ST": "x"
+        },
+        {
+          "LD": "x"
+        },
+        {
+          "CONST": 2
+        },
+        {
+          "CONST": 9
+        },
+        "SET"
+      ],
+      "input": "0",
+      "output": "",
+      "message": "ERROR: index 2 is out of bounds [0, 2)",
+      "eval": {
+        "output": "",
+        "message": "ERROR: index 2 is out of bounds [0, 2)"
+      },
+      "sm": {
+        "output": "",
+        "message": "ERROR: index 2 is out of bounds [0, 2)"
+      }
+    },
+    {
+      "name": "condition_type",
+      "source": "{if(Leaf)write(1);}",
+      "program": {
+        "if": {
+          "cond": {
+            "sexp": "Leaf",
+            "args": []
+          },
+          "then": {
+            "write": {
+              "const": 1
+            }
+          },
+          "else": "skip"
+        }
+      },
+      "instructions": [
+        {
+          "SEXP": [
+            "Leaf",
+            0
+          ]
+        },
+        {
+          "JZ": "L_else_1"
+        },
+        {
+          "CONST": 1
+        },
+        "WRITE",
+        {
+          "JMP": "L_end_0"
+        },
+        {
+          "LABEL": "L_else_1"
+        },
+        {
+          "LABEL": "L_end_0"
+        }
+      ],
+      "input": "0",
+      "output": "",
+      "message": "ERROR: integer value expected but \"Leaf\" given",
+      "eval": {
+        "output": "",
+        "message": "ERROR: integer value expected but \"Leaf\" given"
+      },
+      "sm": {
+        "output": "",
+        "message": "ERROR: integer value expected but \"Leaf\" given"
+      }
+    },
+    {
+      "name": "comparison",
+      "source": "{write(Pair(1,2)==Pair(1,2));write(A<B);write(A(1,2)<A(9));}",
+      "program": {
+        "seq": {
+          "left": {
+            "write": {
+              "binop": "==",
+              "left": {
+                "sexp": "Pair",
+                "args": [
+                  {
+                    "const": 1
+                  },
+                  {
+                    "const": 2
+                  }
+                ]
+              },
+              "right": {
+                "sexp": "Pair",
+                "args": [
+                  {
+                    "const": 1
+                  },
+                  {
+                    "const": 2
+                  }
+                ]
+              }
+            }
+          },
+          "right": {
+            "seq": {
+              "left": {
+                "write": {
+                  "binop": "<",
+                  "left": {
+                    "sexp": "A",
+                    "args": []
+                  },
+                  "right": {
+                    "sexp": "B",
+                    "args": []
+                  }
+                }
+              },
+              "right": {
+                "write": {
+                  "binop": "<",
+                  "left": {
+                    "sexp": "A",
+                    "args": [
+                      {
+                        "const": 1
+                      },
+                      {
+                        "const": 2
+                      }
+                    ]
+                  },
+                  "right": {
+                    "sexp": "A",
+                    "args": [
+                      {
+                        "const": 9
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "instructions": [
+        {
+          "CONST": 1
+        },
+        {
+          "CONST": 2
+        },
+        {
+          "SEXP": [
+            "Pair",
+            2
+          ]
+        },
+        {
+          "CONST": 1
+        },
+        {
+          "CONST": 2
+        },
+        {
+          "SEXP": [
+            "Pair",
+            2
+          ]
+        },
+        {
+          "BINOP": "=="
+        },
+        "WRITE",
+        {
+          "SEXP": [
+            "A",
+            0
+          ]
+        },
+        {
+          "SEXP": [
+            "B",
+            0
+          ]
+        },
+        {
+          "BINOP": "<"
+        },
+        "WRITE",
+        {
+          "CONST": 1
+        },
+        {
+          "CONST": 2
+        },
+        {
+          "SEXP": [
+            "A",
+            2
+          ]
+        },
+        {
+          "CONST": 9
+        },
+        {
+          "SEXP": [
+            "A",
+            1
+          ]
+        },
+        {
+          "BINOP": "<"
+        },
+        "WRITE"
+      ],
+      "input": "0",
+      "output": "1; 1; 0",
+      "message": "",
+      "eval": {
+        "output": "1, 1, 0",
+        "message": ""
+      },
+      "sm": {
+        "output": "1, 1, 0",
+        "message": ""
+      }
+    },
+    {
+      "name": "compare_list",
+      "source": "{write({1,2}==1:2:{});}",
+      "program": {
+        "write": {
+          "binop": "==",
+          "left": {
+            "sexp": "cons",
+            "args": [
+              {
+                "const": 1
+              },
+              {
+                "sexp": "cons",
+                "args": [
+                  {
+                    "const": 2
+                  },
+                  {
+                    "sexp": "nil",
+                    "args": []
+                  }
+                ]
+              }
+            ]
+          },
+          "right": {
+            "sexp": "cons",
+            "args": [
+              {
+                "const": 1
+              },
+              {
+                "sexp": "cons",
+                "args": [
+                  {
+                    "const": 2
+                  },
+                  {
+                    "sexp": "nil",
+                    "args": []
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "instructions": [
+        {
+          "CONST": 1
+        },
+        {
+          "CONST": 2
+        },
+        {
+          "SEXP": [
+            "nil",
+            0
+          ]
+        },
+        {
+          "SEXP": [
+            "cons",
+            2
+          ]
+        },
+        {
+          "SEXP": [
+            "cons",
+            2
+          ]
+        },
+        {
+          "CONST": 1
+        },
+        {
+          "CONST": 2
+        },
+        {
+          "SEXP": [
+            "nil",
+            0
+          ]
+        },
+        {
+          "SEXP": [
+            "cons",
+            2
+          ]
+        },
+        {
+          "SEXP": [
+            "cons",
+            2
+          ]
+        },
+        {
+          "BINOP": "=="
+        },
+        "WRITE"
+      ],
+      "input": "0",
+      "output": "1",
+      "message": "",
+      "eval": {
+        "output": "1",
+        "message": ""
+      },
+      "sm": {
+        "output": "1",
+        "message": ""
+      }
+    },
+    {
+      "name": "compare_nested",
+      "source": "{write(Box({1,2})<Box({1,3}));}",
+      "program": {
+        "write": {
+          "binop": "<",
+          "left": {
+            "sexp": "Box",
+            "args": [
+              {
+                "sexp": "cons",
+                "args": [
+                  {
+                    "const": 1
+                  },
+                  {
+                    "sexp": "cons",
+                    "args": [
+                      {
+                        "const": 2
+                      },
+                      {
+                        "sexp": "nil",
+                        "args": []
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "right": {
+            "sexp": "Box",
+            "args": [
+              {
+                "sexp": "cons",
+                "args": [
+                  {
+                    "const": 1
+                  },
+                  {
+                    "sexp": "cons",
+                    "args": [
+                      {
+                        "const": 3
+                      },
+                      {
+                        "sexp": "nil",
+                        "args": []
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "instructions": [
+        {
+          "CONST": 1
+        },
+        {
+          "CONST": 2
+        },
+        {
+          "SEXP": [
+            "nil",
+            0
+          ]
+        },
+        {
+          "SEXP": [
+            "cons",
+            2
+          ]
+        },
+        {
+          "SEXP": [
+            "cons",
+            2
+          ]
+        },
+        {
+          "SEXP": [
+            "Box",
+            1
+          ]
+        },
+        {
+          "CONST": 1
+        },
+        {
+          "CONST": 3
+        },
+        {
+          "SEXP": [
+            "nil",
+            0
+          ]
+        },
+        {
+          "SEXP": [
+            "cons",
+            2
+          ]
+        },
+        {
+          "SEXP": [
+            "cons",
+            2
+          ]
+        },
+        {
+          "SEXP": [
+            "Box",
+            1
+          ]
+        },
+        {
+          "BINOP": "<"
+        },
+        "WRITE"
+      ],
+      "input": "0",
+      "output": "1",
+      "message": "",
+      "eval": {
+        "output": "1",
+        "message": ""
+      },
+      "sm": {
+        "output": "1",
+        "message": ""
+      }
+    },
+    {
+      "name": "compare_incompatible",
+      "source": "{write(A==1);}",
+      "program": {
+        "write": {
+          "binop": "==",
+          "left": {
+            "sexp": "A",
+            "args": []
+          },
+          "right": {
+            "const": 1
+          }
+        }
+      },
+      "instructions": [
+        {
+          "SEXP": [
+            "A",
+            0
+          ]
+        },
+        {
+          "CONST": 1
+        },
+        {
+          "BINOP": "=="
+        },
+        "WRITE"
+      ],
+      "input": "0",
+      "output": "",
+      "message": "ERROR: binary operator \"=\" is applied to A and 1",
+      "eval": {
+        "output": "",
+        "message": "ERROR: binary operator \"=\" is applied to A and 1"
+      },
+      "sm": {
+        "output": "",
+        "message": "ERROR: binary operator \"=\" is applied to A and 1"
+      }
+    }
+  ]
+}

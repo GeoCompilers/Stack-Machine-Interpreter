@@ -17,7 +17,7 @@ func (m *machine) eval(e *expression) (runtime.Value, error) {
 			return nil, fmt.Errorf("ERROR: variable \"%s\" is undefined", e.text)
 		}
 		return v, nil
-	case "array":
+	case "array", "sexp":
 		elements := make([]runtime.Value, len(e.elements))
 		for i, item := range e.elements {
 			v, err := m.eval(item)
@@ -25,6 +25,9 @@ func (m *machine) eval(e *expression) (runtime.Value, error) {
 				return nil, err
 			}
 			elements[i] = v
+		}
+		if e.kind == "sexp" {
+			return runtime.NewSExpression(e.text, elements), nil
 		}
 		return runtime.NewArray(elements), nil
 	case "binop":
