@@ -13,15 +13,41 @@ import (
 type Value = any
 
 type array struct{ elements []Value }
+type sexpression struct {
+	name string
+	args []Value
+}
 
 var errCycle = errors.New("ERROR: cyclic array")
+var errSExpressionCycle = errors.New("ERROR: cyclic S-expression")
 
-func format(v Value, active map[*array]bool) (string, error) {
+func format(v Value, active map[Value]bool) (string, error) {
 	switch v := v.(type) {
 	case int32:
 		return strconv.FormatInt(int64(v), 10), nil
 	case []byte:
 		return string(v), nil
+	case *sexpression:
+		if active[v] {
+			return "", errSExpressionCycle
+		}
+		active[v] = true
+		defer delete(active, v)
+		if text, proper, err := formatList(v, active); proper || err != nil {
+			return text, err
+		}
+		if len(v.args) == 0 {
+			return v.name, nil
+		}
+		args := make([]string, len(v.args))
+		for i, arg := range v.args {
+			var err error
+			args[i], err = format(arg, active)
+			if err != nil {
+				return "", err
+			}
+		}
+		return v.name + " (" + strings.Join(args, ", ") + ")", nil
 	case *array:
 		if active[v] {
 			return "", errCycle
@@ -42,7 +68,42 @@ func format(v Value, active map[*array]bool) (string, error) {
 	}
 }
 
-func formatted(v Value) (string, error) { return format(v, make(map[*array]bool)) }
+// Walk list tails iteratively. Only ancestors are active, so shared tails and
+// repeated subexpressions remain legal while actual cycles are rejected.
+func formatList(v *sexpression, active map[Value]bool) (string, bool, error) {
+	var parts []string
+	var tails []*sexpression
+	defer func() {
+		for _, tail := range tails {
+			delete(active, tail)
+		}
+	}()
+	for {
+		if v.name == "nil" && len(v.args) == 0 {
+			return "{" + strings.Join(parts, ", ") + "}", true, nil
+		}
+		if v.name != "cons" || len(v.args) != 2 {
+			return "", false, nil
+		}
+		head, err := format(v.args[0], active)
+		if err != nil {
+			return "", false, err
+		}
+		parts = append(parts, head)
+		tail, ok := v.args[1].(*sexpression)
+		if !ok {
+			return "", false, nil
+		}
+		if active[tail] {
+			return "", false, errSExpressionCycle
+		}
+		active[tail] = true
+		tails = append(tails, tail)
+		v = tail
+	}
+}
+
+func formatted(v Value) (string, error) { return format(v, make(map[Value]bool)) }
 func Integer(v Value) (int32, error) {
 	if n, ok := v.(int32); ok {
 		return n, nil
@@ -60,6 +121,8 @@ func Length(v Value) (int32, error) {
 		return int32(len(v)), nil
 	case *array:
 		return int32(len(v.elements)), nil
+	case *sexpression:
+		return int32(len(v.args)), nil
 	default:
 		text, err := formatted(v)
 		if err != nil {
@@ -80,9 +143,9 @@ func checkIndex(v Value, index int32) error {
 	return nil
 }
 
-type arrayPair struct{ left, right *array }
+type valuePair struct{ left, right Value }
 
-func compare(op string, left, right Value, active map[arrayPair]bool) (int, error) {
+func compare(op string, left, right Value, active map[valuePair]bool) (int, error) {
 	switch l := left.(type) {
 	case int32:
 		if r, ok := right.(int32); ok {
@@ -98,6 +161,31 @@ func compare(op string, left, right Value, active map[arrayPair]bool) (int, erro
 		if r, ok := right.([]byte); ok {
 			return bytes.Compare(l, r), nil
 		}
+	case *sexpression:
+		if r, ok := right.(*sexpression); ok {
+			if c := strings.Compare(l.name, r.name); c != 0 {
+				return c, nil
+			}
+			if len(l.args) < len(r.args) {
+				return -1, nil
+			}
+			if len(l.args) > len(r.args) {
+				return 1, nil
+			}
+			pair := valuePair{l, r}
+			if active[pair] {
+				return 0, errSExpressionCycle
+			}
+			active[pair] = true
+			defer delete(active, pair)
+			for i := range l.args {
+				c, err := compare(op, l.args[i], r.args[i], active)
+				if err != nil || c != 0 {
+					return c, err
+				}
+			}
+			return 0, nil
+		}
 	case *array:
 		if r, ok := right.(*array); ok {
 			if len(l.elements) < len(r.elements) {
@@ -106,7 +194,7 @@ func compare(op string, left, right Value, active map[arrayPair]bool) (int, erro
 			if len(l.elements) > len(r.elements) {
 				return 1, nil
 			}
-			pair := arrayPair{l, r}
+			pair := valuePair{l, r}
 			if active[pair] {
 				return 0, errCycle
 			}
@@ -149,7 +237,7 @@ func Binary(op string, left, right Value) (Value, error) {
 		if op == "!=" {
 			diagnosticOp = "<>"
 		}
-		c, err := compare(diagnosticOp, left, right, make(map[arrayPair]bool))
+		c, err := compare(diagnosticOp, left, right, make(map[valuePair]bool))
 		if err != nil {
 			return nil, err
 		}
@@ -236,6 +324,10 @@ func NewArray(elements []Value) Value {
 	return &array{elements: append([]Value(nil), elements...)}
 }
 
+func NewSExpression(name string, args []Value) Value {
+	return &sexpression{name: name, args: append([]Value(nil), args...)}
+}
+
 func Element(object, index Value) (Value, error) {
 	i, err := Integer(index)
 	if err != nil {
@@ -249,6 +341,8 @@ func Element(object, index Value) (Value, error) {
 		return int32(object[i]), nil
 	case *array:
 		return object.elements[i], nil
+	case *sexpression:
+		return object.args[i], nil
 	default:
 		return nil, fmt.Errorf("unsupported value %T", object)
 	}
@@ -265,6 +359,8 @@ func Set(object, index, v Value) error {
 	switch object := object.(type) {
 	case *array:
 		object.elements[i] = v
+	case *sexpression:
+		object.args[i] = v
 	case []byte:
 		n, err := Integer(v)
 		if err != nil {

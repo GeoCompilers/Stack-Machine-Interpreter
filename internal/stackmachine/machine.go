@@ -58,6 +58,8 @@ func (m *StackMachine) run(input []runtime.Value) ([]runtime.Value, error) {
 			m.stack = append(m.stack, runtime.NewString(inst.operand))
 		case "ARRAY":
 			err = m.makeArray(inst.value)
+		case "SEXP":
+			err = m.makeSExpression(inst.operand, inst.value)
 		case "LENGTH", "ELEM", "SET":
 			err = m.aggregate(inst.opcode)
 		case "LD":
@@ -149,6 +151,15 @@ func (m *StackMachine) makeArray(count int32) error {
 		return errStack
 	}
 	value := runtime.NewArray(m.stack[len(m.stack)-int(count):])
+	m.replace(int(count), value)
+	return nil
+}
+
+func (m *StackMachine) makeSExpression(name string, count int32) error {
+	if int64(count) > int64(len(m.stack)) {
+		return errStack
+	}
+	value := runtime.NewSExpression(name, m.stack[len(m.stack)-int(count):])
 	m.replace(int(count), value)
 	return nil
 }

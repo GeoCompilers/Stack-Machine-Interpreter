@@ -14,7 +14,7 @@ override INPUT := $(value INPUT)
 override OUTPUT := $(value OUTPUT)
 export SOURCE AST CODE INPUT OUTPUT REFERENCE REFERENCE_IMAGE REFERENCE_PLATFORM REFERENCE_JS DOCKER
 
-.PHONY: help test test-cases test-reference test-interpreter-reference test-sm-reference test-workflow build build-compiler build-interpreter ast run compile run-sm reference-js
+.PHONY: help test test-cases test-reference test-interpreter-reference test-sm-reference test-sexp-reference test-workflow build build-compiler build-interpreter ast run compile run-sm reference-js
 
 help:
 	@echo 'make ast SOURCE=program.l0 [AST=program.json] - source -> reference -> JSON AST'
@@ -32,6 +32,7 @@ help:
 	@echo 'make test-cases - validate SM fixtures; make test-reference - compare legacy SM fixtures'
 	@echo 'make test-interpreter-reference REFERENCE_JS=/path/to/pinned/L0.js - check saved eval.html fixtures'
 	@echo 'make test-sm-reference REFERENCE_JS=/path/to/pinned/L0.js - check saved sm.html fixtures'
+	@echo 'make test-sexp-reference REFERENCE_JS=/path/to/pinned/L0.js - check S-expression fixtures'
 
 test:
 	$(GO) test $(GOFLAGS) -count=1 -timeout=120s ./...
@@ -78,3 +79,6 @@ test-interpreter-reference:
 
 test-sm-reference:
 	$(NODE) scripts/sm-reference.cjs --check "$(REFERENCE_JS)"
+
+test-sexp-reference:
+	$(NODE) scripts/sexp-reference.cjs --check "$(REFERENCE_JS)"

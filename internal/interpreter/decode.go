@@ -47,6 +47,27 @@ func decodeExpression(data json.RawMessage) (*expression, error) {
 	}
 	e := &expression{}
 	switch {
+	case f["sexp"] != nil:
+		if err = f.require("sexp", "args"); err != nil {
+			break
+		}
+		e.kind = "sexp"
+		e.text, err = scalar[string](f["sexp"])
+		if err == nil && e.text == "" {
+			err = fmt.Errorf("AST: S-expression name must not be empty")
+		}
+		if err == nil {
+			var raw []json.RawMessage
+			raw, err = scalar[[]json.RawMessage](f["args"])
+			for _, item := range raw {
+				if err != nil {
+					break
+				}
+				var element *expression
+				element, err = decodeExpression(item)
+				e.elements = append(e.elements, element)
+			}
+		}
 	case f["binop"] != nil:
 		if err = f.require("binop", "left", "right"); err != nil {
 			break

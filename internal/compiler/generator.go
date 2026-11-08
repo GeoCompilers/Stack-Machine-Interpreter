@@ -135,6 +135,16 @@ func (g *generator) compileExpression(node expression) error {
 		g.emitString("LD", value.name)
 	case stringExpression:
 		g.emitString("STRING", value.text)
+	case sexpExpression:
+		if len(value.args) > math.MaxInt32 {
+			return fmt.Errorf("AST: too many S-expression arguments")
+		}
+		for _, arg := range value.args {
+			if err := g.compileExpression(arg); err != nil {
+				return err
+			}
+		}
+		g.instructions = append(g.instructions, map[string]any{"SEXP": []any{value.name, int32(len(value.args))}})
 	case arrayExpression:
 		if len(value.elements) > math.MaxInt32 {
 			return fmt.Errorf("AST: too many array elements")

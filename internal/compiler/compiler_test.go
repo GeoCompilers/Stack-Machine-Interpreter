@@ -277,6 +277,7 @@ func TestCurrentSMReference(t *testing.T) {
 
 func TestCompileAggregateInstructions(t *testing.T) {
 	for _, test := range []struct{ ast, code string }{
+		{`{"write":{"sexp":"Pair","args":[{"const":1},{"sexp":"Leaf","args":[]}]}}`, `[{"CONST":1},{"SEXP":["Leaf",0]},{"SEXP":["Pair",2]},"WRITE"]`},
 		{`{"write":{"array":[{"const":1},{"string":"x"},{"array":[]}]}}`, `[{"CONST":1},{"STRING":"x"},{"ARRAY":0},{"ARRAY":3},"WRITE"]`},
 		{`{"write":{"elem":{"var":"a"},"index":{"const":2}}}`, `[{"LD":"a"},{"CONST":2},"ELEM","WRITE"]`},
 		{`{"set":{"dst":{"var":"a"},"idx":{"const":2},"value":{"string":""}}}`, `[{"LD":"a"},{"CONST":2},{"STRING":""},"SET"]`},

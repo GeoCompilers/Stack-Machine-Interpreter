@@ -6,6 +6,10 @@ type literalExpression struct{ value int32 }
 type variableExpression struct{ name string }
 type stringExpression struct{ text string }
 type arrayExpression struct{ elements []expression }
+type sexpExpression struct {
+	name string
+	args []expression
+}
 type lengthExpression struct{ object expression }
 type elementExpression struct{ object, index expression }
 type binaryExpression struct {
@@ -18,6 +22,7 @@ func (literalExpression) expressionNode()  {}
 func (variableExpression) expressionNode() {}
 func (stringExpression) expressionNode()   {}
 func (arrayExpression) expressionNode()    {}
+func (sexpExpression) expressionNode()     {}
 func (lengthExpression) expressionNode()   {}
 func (elementExpression) expressionNode()  {}
 func (binaryExpression) expressionNode()   {}
