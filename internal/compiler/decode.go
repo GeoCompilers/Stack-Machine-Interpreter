@@ -162,6 +162,8 @@ func decodeStatement(data json.RawMessage) (statement, error) {
 		case "write":
 			value, err := decodeExpression(payload)
 			return writeStatement{value: value}, err
+		case "switch":
+			return nil, fmt.Errorf("AST: switch is supported only by the AST interpreter")
 		case "set", "assn", "seq", "if", "while", "do":
 		default:
 			return nil, fmt.Errorf("AST: unknown statement %q", kind)

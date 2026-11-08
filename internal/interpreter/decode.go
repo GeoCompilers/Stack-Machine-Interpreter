@@ -149,6 +149,8 @@ func decodeStatement(data json.RawMessage) (*statement, error) {
 			s.name, err = scalar[string](payload)
 		case "write":
 			s.value, err = decodeExpression(payload)
+		case "switch":
+			err = decodeSwitch(payload, s)
 		case "assn", "set", "seq", "if", "while", "do":
 			var p fields
 			p, err = object(payload)
@@ -211,4 +213,44 @@ func decodeStatement(data json.RawMessage) (*statement, error) {
 		return nil, err
 	}
 	return s, nil
+}
+
+func decodeSwitch(data json.RawMessage, s *statement) error {
+	p, err := object(data)
+	if err != nil {
+		return err
+	}
+	if err := p.require("scrutinee", "branches"); err != nil {
+		return err
+	}
+	s.value, err = decodeExpression(p["scrutinee"])
+	if err != nil {
+		return err
+	}
+	raw, err := scalar[[]json.RawMessage](p["branches"])
+	if err != nil {
+		return err
+	}
+	if len(raw) == 0 {
+		return fmt.Errorf("AST: switch requires at least one branch")
+	}
+	for _, data := range raw {
+		branch, err := object(data)
+		if err != nil {
+			return err
+		}
+		if err := branch.require("pattern", "branch"); err != nil {
+			return err
+		}
+		pattern, err := runtime.DecodePattern(branch["pattern"])
+		if err != nil {
+			return err
+		}
+		body, err := decodeStatement(branch["branch"])
+		if err != nil {
+			return err
+		}
+		s.branches = append(s.branches, switchBranch{pattern: pattern, body: body})
+	}
+	return nil
 }

@@ -1,0 +1,30 @@
+{
+  "interpreter/reference.json": {
+    "probe_no_string_concat": {
+      "output": "ab",
+      "message": ""
+    },
+    "probe_no_array_concat": {
+      "output": "",
+      "message": "ERROR: binary operator \"+\" is applied to [1] and [2]"
+    },
+    "extra_quote_in_diagnostic": {
+      "output": "a\"b1",
+      "message": ""
+    }
+  },
+  "sm_reference.json": {
+    "probe_no_string_concat": {
+      "output": "\"a\"\"b\"",
+      "message": ""
+    },
+    "probe_no_array_concat": {
+      "output": "",
+      "message": "ERROR: binary operator \"+\" is applied to [1] and [2]"
+    },
+    "sm_binary_type_order": {
+      "output": "leftright",
+      "message": ""
+    }
+  }
+}

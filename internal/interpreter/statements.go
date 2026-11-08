@@ -66,10 +66,49 @@ func (m *machine) exec(s *statement) error {
 			}
 		case "set":
 			return m.set(s)
+		case "switch":
+			return m.switchStatement(s)
 		default:
 			return fmt.Errorf("AST: unknown statement %q", s.kind)
 		}
 	}
+}
+
+func (m *machine) switchStatement(s *statement) error {
+	value, err := m.eval(s.value)
+	if err != nil {
+		return err
+	}
+	for _, branch := range s.branches {
+		bindings, ok := runtime.Match(branch.pattern, value)
+		if ok {
+			return m.withBindings(bindings, branch.body)
+		}
+	}
+	return runtime.MatchFailure(value)
+}
+
+func (m *machine) withBindings(bindings map[string]runtime.Value, body *statement) error {
+	type savedVariable struct {
+		value  runtime.Value
+		exists bool
+	}
+	saved := make(map[string]savedVariable, len(bindings))
+	for name, value := range bindings {
+		previous, exists := m.variables[name]
+		saved[name] = savedVariable{value: previous, exists: exists}
+		m.variables[name] = value
+	}
+	defer func() {
+		for name, previous := range saved {
+			if previous.exists {
+				m.variables[name] = previous.value
+			} else {
+				delete(m.variables, name)
+			}
+		}
+	}()
+	return m.exec(body)
 }
 
 func (m *machine) condition(e *expression) (bool, error) {

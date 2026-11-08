@@ -1,0 +1,4015 @@
+{
+  "reference": {
+    "url": "https://dboulytchev.github.io/eval.html",
+    "machine_url": "https://dboulytchev.github.io/sm.html",
+    "sha256": "9536eb3ca339a92125f8cc4ddf02622391c973bcb09d60e26546c329b9254cb4",
+    "differences": [
+      "Project formatting uses semicolons and unquoted strings.",
+      "Reserved type-pattern strings cannot represent identical string literals in exported AST.",
+      "The official SM compiler does not support switch."
+    ]
+  },
+  "cases": [
+    {
+      "name": "wildcard",
+      "source": "{switch(1){case _ -> write(1);}}",
+      "program": {
+        "switch": {
+          "scrutinee": {
+            "const": 1
+          },
+          "branches": [
+            {
+              "pattern": {
+                "wildcard": []
+              },
+              "branch": {
+                "write": {
+                  "const": 1
+                }
+              }
+            }
+          ]
+        }
+      },
+      "input": "0",
+      "interpreterOnly": true,
+      "reference": {
+        "eval": {
+          "output": "1",
+          "message": ""
+        },
+        "sm": null
+      },
+      "expected": {
+        "output": "1",
+        "message": ""
+      }
+    },
+    {
+      "name": "integer",
+      "source": "{switch(2){case 1 -> write(0); | case 2 -> write(1);}}",
+      "program": {
+        "switch": {
+          "scrutinee": {
+            "const": 2
+          },
+          "branches": [
+            {
+              "pattern": 1,
+              "branch": {
+                "write": {
+                  "const": 0
+                }
+              }
+            },
+            {
+              "pattern": 2,
+              "branch": {
+                "write": {
+                  "const": 1
+                }
+              }
+            }
+          ]
+        }
+      },
+      "input": "0",
+      "interpreterOnly": true,
+      "reference": {
+        "eval": {
+          "output": "1",
+          "message": ""
+        },
+        "sm": null
+      },
+      "expected": {
+        "output": "1",
+        "message": ""
+      }
+    },
+    {
+      "name": "negative",
+      "source": "{switch(0-1){case -1 -> write(1);}}",
+      "program": {
+        "switch": {
+          "scrutinee": {
+            "binop": "-",
+            "left": {
+              "const": 0
+            },
+            "right": {
+              "const": 1
+            }
+          },
+          "branches": [
+            {
+              "pattern": -1,
+              "branch": {
+                "write": {
+                  "const": 1
+                }
+              }
+            }
+          ]
+        }
+      },
+      "input": "0",
+      "interpreterOnly": true,
+      "reference": {
+        "eval": {
+          "output": "1",
+          "message": ""
+        },
+        "sm": null
+      },
+      "expected": {
+        "output": "1",
+        "message": ""
+      }
+    },
+    {
+      "name": "character",
+      "source": "{switch('a'){case 'a' -> write(1);}}",
+      "program": {
+        "switch": {
+          "scrutinee": {
+            "const": 97
+          },
+          "branches": [
+            {
+              "pattern": 97,
+              "branch": {
+                "write": {
+                  "const": 1
+                }
+              }
+            }
+          ]
+        }
+      },
+      "input": "0",
+      "interpreterOnly": true,
+      "reference": {
+        "eval": {
+          "output": "1",
+          "message": ""
+        },
+        "sm": null
+      },
+      "expected": {
+        "output": "1",
+        "message": ""
+      }
+    },
+    {
+      "name": "string",
+      "source": "{switch(\"abc\"){case \"abc\" -> write(1);}}",
+      "program": {
+        "switch": {
+          "scrutinee": {
+            "string": "abc"
+          },
+          "branches": [
+            {
+              "pattern": "abc",
+              "branch": {
+                "write": {
+                  "const": 1
+                }
+              }
+            }
+          ]
+        }
+      },
+      "input": "0",
+      "interpreterOnly": true,
+      "reference": {
+        "eval": {
+          "output": "1",
+          "message": ""
+        },
+        "sm": null
+      },
+      "expected": {
+        "output": "1",
+        "message": ""
+      }
+    },
+    {
+      "name": "empty_string",
+      "source": "{switch(\"\"){case \"\" -> write(1);}}",
+      "program": {
+        "switch": {
+          "scrutinee": {
+            "string": ""
+          },
+          "branches": [
+            {
+              "pattern": "",
+              "branch": {
+                "write": {
+                  "const": 1
+                }
+              }
+            }
+          ]
+        }
+      },
+      "input": "0",
+      "interpreterOnly": true,
+      "reference": {
+        "eval": {
+          "output": "1",
+          "message": ""
+        },
+        "sm": null
+      },
+      "expected": {
+        "output": "1",
+        "message": ""
+      }
+    },
+    {
+      "name": "first_branch",
+      "source": "{switch(1){case _ -> write(1); | case _ -> write(missing);}}",
+      "program": {
+        "switch": {
+          "scrutinee": {
+            "const": 1
+          },
+          "branches": [
+            {
+              "pattern": {
+                "wildcard": []
+              },
+              "branch": {
+                "write": {
+                  "const": 1
+                }
+              }
+            },
+            {
+              "pattern": {
+                "wildcard": []
+              },
+              "branch": {
+                "write": {
+                  "var": "missing"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "input": "0",
+      "interpreterOnly": true,
+      "reference": {
+        "eval": {
+          "output": "1",
+          "message": ""
+        },
+        "sm": null
+      },
+      "expected": {
+        "output": "1",
+        "message": ""
+      }
+    },
+    {
+      "name": "mismatch_type",
+      "source": "{switch(\"1\"){case 1 -> write(0); | case _ -> write(1);}}",
+      "program": {
+        "switch": {
+          "scrutinee": {
+            "string": "1"
+          },
+          "branches": [
+            {
+              "pattern": 1,
+              "branch": {
+                "write": {
+                  "const": 0
+                }
+              }
+            },
+            {
+              "pattern": {
+                "wildcard": []
+              },
+              "branch": {
+                "write": {
+                  "const": 1
+                }
+              }
+            }
+          ]
+        }
+      },
+      "input": "0",
+      "interpreterOnly": true,
+      "reference": {
+        "eval": {
+          "output": "1",
+          "message": ""
+        },
+        "sm": null
+      },
+      "expected": {
+        "output": "1",
+        "message": ""
+      }
+    },
+    {
+      "name": "array",
+      "source": "{switch([1,2]){case [x,y] -> write(x+y);}}",
+      "program": {
+        "switch": {
+          "scrutinee": {
+            "array": [
+              {
+                "const": 1
+              },
+              {
+                "const": 2
+              }
+            ]
+          },
+          "branches": [
+            {
+              "pattern": {
+                "array": [
+                  {
+                    "bind": {
+                      "pattern": {
+                        "wildcard": []
+                      },
+                      "name": "x"
+                    }
+                  },
+                  {
+                    "bind": {
+                      "pattern": {
+                        "wildcard": []
+                      },
+                      "name": "y"
+                    }
+                  }
+                ]
+              },
+              "branch": {
+                "write": {
+                  "binop": "+",
+                  "left": {
+                    "var": "x"
+                  },
+                  "right": {
+                    "var": "y"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "input": "0",
+      "interpreterOnly": true,
+      "reference": {
+        "eval": {
+          "output": "3",
+          "message": ""
+        },
+        "sm": null
+      },
+      "expected": {
+        "output": "3",
+        "message": ""
+      }
+    },
+    {
+      "name": "empty_array",
+      "source": "{read(a);switch(a){case [] -> write(1);}}",
+      "program": {
+        "seq": {
+          "left": {
+            "read": "a"
+          },
+          "right": {
+            "switch": {
+              "scrutinee": {
+                "var": "a"
+              },
+              "branches": [
+                {
+                  "pattern": {
+                    "array": []
+                  },
+                  "branch": {
+                    "write": {
+                      "const": 1
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "input": "[]",
+      "interpreterOnly": true,
+      "reference": {
+        "eval": {
+          "output": "1",
+          "message": ""
+        },
+        "sm": null
+      },
+      "expected": {
+        "output": "1",
+        "message": ""
+      }
+    },
+    {
+      "name": "array_size",
+      "source": "{switch([1,2]){case [x] -> write(0); | case _ -> write(1);}}",
+      "program": {
+        "switch": {
+          "scrutinee": {
+            "array": [
+              {
+                "const": 1
+              },
+              {
+                "const": 2
+              }
+            ]
+          },
+          "branches": [
+            {
+              "pattern": {
+                "array": [
+                  {
+                    "bind": {
+                      "pattern": {
+                        "wildcard": []
+                      },
+                      "name": "x"
+                    }
+                  }
+                ]
+              },
+              "branch": {
+                "write": {
+                  "const": 0
+                }
+              }
+            },
+            {
+              "pattern": {
+                "wildcard": []
+              },
+              "branch": {
+                "write": {
+                  "const": 1
+                }
+              }
+            }
+          ]
+        }
+      },
+      "input": "0",
+      "interpreterOnly": true,
+      "reference": {
+        "eval": {
+          "output": "1",
+          "message": ""
+        },
+        "sm": null
+      },
+      "expected": {
+        "output": "1",
+        "message": ""
+      }
+    },
+    {
+      "name": "constructor",
+      "source": "{switch(Pair(1,2)){case Pair(x,y) -> write(x+y);}}",
+      "program": {
+        "switch": {
+          "scrutinee": {
+            "sexp": "Pair",
+            "args": [
+              {
+                "const": 1
+              },
+              {
+                "const": 2
+              }
+            ]
+          },
+          "branches": [
+            {
+              "pattern": {
+                "sexp": "Pair",
+                "args": [
+                  {
+                    "bind": {
+                      "pattern": {
+                        "wildcard": []
+                      },
+                      "name": "x"
+                    }
+                  },
+                  {
+                    "bind": {
+                      "pattern": {
+                        "wildcard": []
+                      },
+                      "name": "y"
+                    }
+                  }
+                ]
+              },
+              "branch": {
+                "write": {
+                  "binop": "+",
+                  "left": {
+                    "var": "x"
+                  },
+                  "right": {
+                    "var": "y"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "input": "0",
+      "interpreterOnly": true,
+      "reference": {
+        "eval": {
+          "output": "3",
+          "message": ""
+        },
+        "sm": null
+      },
+      "expected": {
+        "output": "3",
+        "message": ""
+      }
+    },
+    {
+      "name": "nullary",
+      "source": "{switch(Leaf){case Leaf -> write(1);}}",
+      "program": {
+        "switch": {
+          "scrutinee": {
+            "sexp": "Leaf",
+            "args": []
+          },
+          "branches": [
+            {
+              "pattern": {
+                "sexp": "Leaf",
+                "args": []
+              },
+              "branch": {
+                "write": {
+                  "const": 1
+                }
+              }
+            }
+          ]
+        }
+      },
+      "input": "0",
+      "interpreterOnly": true,
+      "reference": {
+        "eval": {
+          "output": "1",
+          "message": ""
+        },
+        "sm": null
+      },
+      "expected": {
+        "output": "1",
+        "message": ""
+      }
+    },
+    {
+      "name": "constructor_tag",
+      "source": "{switch(Pair(1,2)){case Box(x,y) -> write(0); | case _ -> write(1);}}",
+      "program": {
+        "switch": {
+          "scrutinee": {
+            "sexp": "Pair",
+            "args": [
+              {
+                "const": 1
+              },
+              {
+                "const": 2
+              }
+            ]
+          },
+          "branches": [
+            {
+              "pattern": {
+                "sexp": "Box",
+                "args": [
+                  {
+                    "bind": {
+                      "pattern": {
+                        "wildcard": []
+                      },
+                      "name": "x"
+                    }
+                  },
+                  {
+                    "bind": {
+                      "pattern": {
+                        "wildcard": []
+                      },
+                      "name": "y"
+                    }
+                  }
+                ]
+              },
+              "branch": {
+                "write": {
+                  "const": 0
+                }
+              }
+            },
+            {
+              "pattern": {
+                "wildcard": []
+              },
+              "branch": {
+                "write": {
+                  "const": 1
+                }
+              }
+            }
+          ]
+        }
+      },
+      "input": "0",
+      "interpreterOnly": true,
+      "reference": {
+        "eval": {
+          "output": "1",
+          "message": ""
+        },
+        "sm": null
+      },
+      "expected": {
+        "output": "1",
+        "message": ""
+      }
+    },
+    {
+      "name": "constructor_size",
+      "source": "{switch(Pair(1,2)){case Pair(x) -> write(0); | case _ -> write(1);}}",
+      "program": {
+        "switch": {
+          "scrutinee": {
+            "sexp": "Pair",
+            "args": [
+              {
+                "const": 1
+              },
+              {
+                "const": 2
+              }
+            ]
+          },
+          "branches": [
+            {
+              "pattern": {
+                "sexp": "Pair",
+                "args": [
+                  {
+                    "bind": {
+                      "pattern": {
+                        "wildcard": []
+                      },
+                      "name": "x"
+                    }
+                  }
+                ]
+              },
+              "branch": {
+                "write": {
+                  "const": 0
+                }
+              }
+            },
+            {
+              "pattern": {
+                "wildcard": []
+              },
+              "branch": {
+                "write": {
+                  "const": 1
+                }
+              }
+            }
+          ]
+        }
+      },
+      "input": "0",
+      "interpreterOnly": true,
+      "reference": {
+        "eval": {
+          "output": "1",
+          "message": ""
+        },
+        "sm": null
+      },
+      "expected": {
+        "output": "1",
+        "message": ""
+      }
+    },
+    {
+      "name": "nested",
+      "source": "{switch(Box([Pair(1,2),3])){case Box([Pair(x,y),z]) -> write(x+y+z);}}",
+      "program": {
+        "switch": {
+          "scrutinee": {
+            "sexp": "Box",
+            "args": [
+              {
+                "array": [
+                  {
+                    "sexp": "Pair",
+                    "args": [
+                      {
+                        "const": 1
+                      },
+                      {
+                        "const": 2
+                      }
+                    ]
+                  },
+                  {
+                    "const": 3
+                  }
+                ]
+              }
+            ]
+          },
+          "branches": [
+            {
+              "pattern": {
+                "sexp": "Box",
+                "args": [
+                  {
+                    "array": [
+                      {
+                        "sexp": "Pair",
+                        "args": [
+                          {
+                            "bind": {
+                              "pattern": {
+                                "wildcard": []
+                              },
+                              "name": "x"
+                            }
+                          },
+                          {
+                            "bind": {
+                              "pattern": {
+                                "wildcard": []
+                              },
+                              "name": "y"
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "bind": {
+                          "pattern": {
+                            "wildcard": []
+                          },
+                          "name": "z"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              "branch": {
+                "write": {
+                  "binop": "+",
+                  "left": {
+                    "binop": "+",
+                    "left": {
+                      "var": "x"
+                    },
+                    "right": {
+                      "var": "y"
+                    }
+                  },
+                  "right": {
+                    "var": "z"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "input": "0",
+      "interpreterOnly": true,
+      "reference": {
+        "eval": {
+          "output": "6",
+          "message": ""
+        },
+        "sm": null
+      },
+      "expected": {
+        "output": "6",
+        "message": ""
+      }
+    },
+    {
+      "name": "empty_list",
+      "source": "{switch({}){case {} -> write(1);}}",
+      "program": {
+        "switch": {
+          "scrutinee": {
+            "sexp": "nil",
+            "args": []
+          },
+          "branches": [
+            {
+              "pattern": {
+                "sexp": "nil",
+                "args": []
+              },
+              "branch": {
+                "write": {
+                  "const": 1
+                }
+              }
+            }
+          ]
+        }
+      },
+      "input": "0",
+      "interpreterOnly": true,
+      "reference": {
+        "eval": {
+          "output": "1",
+          "message": ""
+        },
+        "sm": null
+      },
+      "expected": {
+        "output": "1",
+        "message": ""
+      }
+    },
+    {
+      "name": "list_exact",
+      "source": "{switch({1,2}){case {x,y} -> write(x+y);}}",
+      "program": {
+        "switch": {
+          "scrutinee": {
+            "sexp": "cons",
+            "args": [
+              {
+                "const": 1
+              },
+              {
+                "sexp": "cons",
+                "args": [
+                  {
+                    "const": 2
+                  },
+                  {
+                    "sexp": "nil",
+                    "args": []
+                  }
+                ]
+              }
+            ]
+          },
+          "branches": [
+            {
+              "pattern": {
+                "sexp": "cons",
+                "args": [
+                  {
+                    "bind": {
+                      "pattern": {
+                        "wildcard": []
+                      },
+                      "name": "x"
+                    }
+                  },
+                  {
+                    "sexp": "cons",
+                    "args": [
+                      {
+                        "bind": {
+                          "pattern": {
+                            "wildcard": []
+                          },
+                          "name": "y"
+                        }
+                      },
+                      {
+                        "sexp": "nil",
+                        "args": []
+                      }
+                    ]
+                  }
+                ]
+              },
+              "branch": {
+                "write": {
+                  "binop": "+",
+                  "left": {
+                    "var": "x"
+                  },
+                  "right": {
+                    "var": "y"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "input": "0",
+      "interpreterOnly": true,
+      "reference": {
+        "eval": {
+          "output": "3",
+          "message": ""
+        },
+        "sm": null
+      },
+      "expected": {
+        "output": "3",
+        "message": ""
+      }
+    },
+    {
+      "name": "list_tail",
+      "source": "{switch({1,2,3}){case h:t -> write(h);write(t);}}",
+      "program": {
+        "switch": {
+          "scrutinee": {
+            "sexp": "cons",
+            "args": [
+              {
+                "const": 1
+              },
+              {
+                "sexp": "cons",
+                "args": [
+                  {
+                    "const": 2
+                  },
+                  {
+                    "sexp": "cons",
+                    "args": [
+                      {
+                        "const": 3
+                      },
+                      {
+                        "sexp": "nil",
+                        "args": []
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "branches": [
+            {
+              "pattern": {
+                "sexp": "cons",
+                "args": [
+                  {
+                    "bind": {
+                      "pattern": {
+                        "wildcard": []
+                      },
+                      "name": "h"
+                    }
+                  },
+                  {
+                    "bind": {
+                      "pattern": {
+                        "wildcard": []
+                      },
+                      "name": "t"
+                    }
+                  }
+                ]
+              },
+              "branch": {
+                "seq": {
+                  "left": {
+                    "write": {
+                      "var": "h"
+                    }
+                  },
+                  "right": {
+                    "write": {
+                      "var": "t"
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "input": "0",
+      "interpreterOnly": true,
+      "reference": {
+        "eval": {
+          "output": "1, {2, 3}",
+          "message": ""
+        },
+        "sm": null
+      },
+      "expected": {
+        "output": "1; {2, 3}",
+        "message": ""
+      }
+    },
+    {
+      "name": "list_size",
+      "source": "{switch({1,2,3}){case {x,y} -> write(0); | case _ -> write(1);}}",
+      "program": {
+        "switch": {
+          "scrutinee": {
+            "sexp": "cons",
+            "args": [
+              {
+                "const": 1
+              },
+              {
+                "sexp": "cons",
+                "args": [
+                  {
+                    "const": 2
+                  },
+                  {
+                    "sexp": "cons",
+                    "args": [
+                      {
+                        "const": 3
+                      },
+                      {
+                        "sexp": "nil",
+                        "args": []
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "branches": [
+            {
+              "pattern": {
+                "sexp": "cons",
+                "args": [
+                  {
+                    "bind": {
+                      "pattern": {
+                        "wildcard": []
+                      },
+                      "name": "x"
+                    }
+                  },
+                  {
+                    "sexp": "cons",
+                    "args": [
+                      {
+                        "bind": {
+                          "pattern": {
+                            "wildcard": []
+                          },
+                          "name": "y"
+                        }
+                      },
+                      {
+                        "sexp": "nil",
+                        "args": []
+                      }
+                    ]
+                  }
+                ]
+              },
+              "branch": {
+                "write": {
+                  "const": 0
+                }
+              }
+            },
+            {
+              "pattern": {
+                "wildcard": []
+              },
+              "branch": {
+                "write": {
+                  "const": 1
+                }
+              }
+            }
+          ]
+        }
+      },
+      "input": "0",
+      "interpreterOnly": true,
+      "reference": {
+        "eval": {
+          "output": "1",
+          "message": ""
+        },
+        "sm": null
+      },
+      "expected": {
+        "output": "1",
+        "message": ""
+      }
+    },
+    {
+      "name": "type_int",
+      "source": "{switch(1){case x@#int -> write(x);}}",
+      "program": {
+        "switch": {
+          "scrutinee": {
+            "const": 1
+          },
+          "branches": [
+            {
+              "pattern": {
+                "bind": {
+                  "pattern": "#int",
+                  "name": "x"
+                }
+              },
+              "branch": {
+                "write": {
+                  "var": "x"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "input": "0",
+      "interpreterOnly": true,
+      "reference": {
+        "eval": {
+          "output": "1",
+          "message": ""
+        },
+        "sm": null
+      },
+      "expected": {
+        "output": "1",
+        "message": ""
+      }
+    },
+    {
+      "name": "type_string",
+      "source": "{switch(\"a\"){case x@#string -> write(x);}}",
+      "program": {
+        "switch": {
+          "scrutinee": {
+            "string": "a"
+          },
+          "branches": [
+            {
+              "pattern": {
+                "bind": {
+                  "pattern": "#string",
+                  "name": "x"
+                }
+              },
+              "branch": {
+                "write": {
+                  "var": "x"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "input": "0",
+      "interpreterOnly": true,
+      "reference": {
+        "eval": {
+          "output": "\"a\"",
+          "message": ""
+        },
+        "sm": null
+      },
+      "expected": {
+        "output": "a",
+        "message": ""
+      }
+    },
+    {
+      "name": "type_array",
+      "source": "{switch([1]){case x@#array -> write(x);}}",
+      "program": {
+        "switch": {
+          "scrutinee": {
+            "array": [
+              {
+                "const": 1
+              }
+            ]
+          },
+          "branches": [
+            {
+              "pattern": {
+                "bind": {
+                  "pattern": "#array",
+                  "name": "x"
+                }
+              },
+              "branch": {
+                "write": {
+                  "var": "x"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "input": "0",
+      "interpreterOnly": true,
+      "reference": {
+        "eval": {
+          "output": "[1]",
+          "message": ""
+        },
+        "sm": null
+      },
+      "expected": {
+        "output": "[1]",
+        "message": ""
+      }
+    },
+    {
+      "name": "type_sexp",
+      "source": "{switch(Leaf){case x@#sexp -> write(x);}}",
+      "program": {
+        "switch": {
+          "scrutinee": {
+            "sexp": "Leaf",
+            "args": []
+          },
+          "branches": [
+            {
+              "pattern": {
+                "bind": {
+                  "pattern": "#sexp",
+                  "name": "x"
+                }
+              },
+              "branch": {
+                "write": {
+                  "var": "x"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "input": "0",
+      "interpreterOnly": true,
+      "reference": {
+        "eval": {
+          "output": "Leaf",
+          "message": ""
+        },
+        "sm": null
+      },
+      "expected": {
+        "output": "Leaf",
+        "message": ""
+      }
+    },
+    {
+      "name": "type_mismatch",
+      "source": "{switch([1]){case #sexp -> write(0); | case _ -> write(1);}}",
+      "program": {
+        "switch": {
+          "scrutinee": {
+            "array": [
+              {
+                "const": 1
+              }
+            ]
+          },
+          "branches": [
+            {
+              "pattern": "#sexp",
+              "branch": {
+                "write": {
+                  "const": 0
+                }
+              }
+            },
+            {
+              "pattern": {
+                "wildcard": []
+              },
+              "branch": {
+                "write": {
+                  "const": 1
+                }
+              }
+            }
+          ]
+        }
+      },
+      "input": "0",
+      "interpreterOnly": true,
+      "reference": {
+        "eval": {
+          "output": "1",
+          "message": ""
+        },
+        "sm": null
+      },
+      "expected": {
+        "output": "1",
+        "message": ""
+      }
+    },
+    {
+      "name": "alias_pattern",
+      "source": "{switch([1,2]){case whole@[x,y] -> write(whole);write(x+y);}}",
+      "program": {
+        "switch": {
+          "scrutinee": {
+            "array": [
+              {
+                "const": 1
+              },
+              {
+                "const": 2
+              }
+            ]
+          },
+          "branches": [
+            {
+              "pattern": {
+                "bind": {
+                  "pattern": {
+                    "array": [
+                      {
+                        "bind": {
+                          "pattern": {
+                            "wildcard": []
+                          },
+                          "name": "x"
+                        }
+                      },
+                      {
+                        "bind": {
+                          "pattern": {
+                            "wildcard": []
+                          },
+                          "name": "y"
+                        }
+                      }
+                    ]
+                  },
+                  "name": "whole"
+                }
+              },
+              "branch": {
+                "seq": {
+                  "left": {
+                    "write": {
+                      "var": "whole"
+                    }
+                  },
+                  "right": {
+                    "write": {
+                      "binop": "+",
+                      "left": {
+                        "var": "x"
+                      },
+                      "right": {
+                        "var": "y"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "input": "0",
+      "interpreterOnly": true,
+      "reference": {
+        "eval": {
+          "output": "[1, 2], 3",
+          "message": ""
+        },
+        "sm": null
+      },
+      "expected": {
+        "output": "[1; 2]; 3",
+        "message": ""
+      }
+    },
+    {
+      "name": "duplicate_name",
+      "source": "{switch(Pair(1,2)){case Pair(x,x) -> write(x);}}",
+      "program": {
+        "switch": {
+          "scrutinee": {
+            "sexp": "Pair",
+            "args": [
+              {
+                "const": 1
+              },
+              {
+                "const": 2
+              }
+            ]
+          },
+          "branches": [
+            {
+              "pattern": {
+                "sexp": "Pair",
+                "args": [
+                  {
+                    "bind": {
+                      "pattern": {
+                        "wildcard": []
+                      },
+                      "name": "x"
+                    }
+                  },
+                  {
+                    "bind": {
+                      "pattern": {
+                        "wildcard": []
+                      },
+                      "name": "x"
+                    }
+                  }
+                ]
+              },
+              "branch": {
+                "write": {
+                  "var": "x"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "input": "0",
+      "interpreterOnly": true,
+      "reference": {
+        "eval": {
+          "output": "2",
+          "message": ""
+        },
+        "sm": null
+      },
+      "expected": {
+        "output": "2",
+        "message": ""
+      }
+    },
+    {
+      "name": "outer_binding",
+      "source": "{switch(Box(1)){case x@Box(x) -> write(x);}}",
+      "program": {
+        "switch": {
+          "scrutinee": {
+            "sexp": "Box",
+            "args": [
+              {
+                "const": 1
+              }
+            ]
+          },
+          "branches": [
+            {
+              "pattern": {
+                "bind": {
+                  "pattern": {
+                    "sexp": "Box",
+                    "args": [
+                      {
+                        "bind": {
+                          "pattern": {
+                            "wildcard": []
+                          },
+                          "name": "x"
+                        }
+                      }
+                    ]
+                  },
+                  "name": "x"
+                }
+              },
+              "branch": {
+                "write": {
+                  "var": "x"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "input": "0",
+      "interpreterOnly": true,
+      "reference": {
+        "eval": {
+          "output": "Box (1)",
+          "message": ""
+        },
+        "sm": null
+      },
+      "expected": {
+        "output": "Box (1)",
+        "message": ""
+      }
+    },
+    {
+      "name": "shadow_restore",
+      "source": "{x=9;switch(1){case x -> x=7;write(x);}write(x);}",
+      "program": {
+        "seq": {
+          "left": {
+            "assn": {
+              "dst": "x",
+              "src": {
+                "const": 9
+              }
+            }
+          },
+          "right": {
+            "seq": {
+              "left": {
+                "switch": {
+                  "scrutinee": {
+                    "const": 1
+                  },
+                  "branches": [
+                    {
+                      "pattern": {
+                        "bind": {
+                          "pattern": {
+                            "wildcard": []
+                          },
+                          "name": "x"
+                        }
+                      },
+                      "branch": {
+                        "seq": {
+                          "left": {
+                            "assn": {
+                              "dst": "x",
+                              "src": {
+                                "const": 7
+                              }
+                            }
+                          },
+                          "right": {
+                            "write": {
+                              "var": "x"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              },
+              "right": {
+                "write": {
+                  "var": "x"
+                }
+              }
+            }
+          }
+        }
+      },
+      "input": "0",
+      "interpreterOnly": true,
+      "reference": {
+        "eval": {
+          "output": "7, 9",
+          "message": ""
+        },
+        "sm": null
+      },
+      "expected": {
+        "output": "7; 9",
+        "message": ""
+      }
+    },
+    {
+      "name": "failed_bindings",
+      "source": "{x=9;switch(Pair(1,2)){case Pair(x,3) -> write(0); | case _ -> write(x);}write(x);}",
+      "program": {
+        "seq": {
+          "left": {
+            "assn": {
+              "dst": "x",
+              "src": {
+                "const": 9
+              }
+            }
+          },
+          "right": {
+            "seq": {
+              "left": {
+                "switch": {
+                  "scrutinee": {
+                    "sexp": "Pair",
+                    "args": [
+                      {
+                        "const": 1
+                      },
+                      {
+                        "const": 2
+                      }
+                    ]
+                  },
+                  "branches": [
+                    {
+                      "pattern": {
+                        "sexp": "Pair",
+                        "args": [
+                          {
+                            "bind": {
+                              "pattern": {
+                                "wildcard": []
+                              },
+                              "name": "x"
+                            }
+                          },
+                          3
+                        ]
+                      },
+                      "branch": {
+                        "write": {
+                          "const": 0
+                        }
+                      }
+                    },
+                    {
+                      "pattern": {
+                        "wildcard": []
+                      },
+                      "branch": {
+                        "write": {
+                          "var": "x"
+                        }
+                      }
+                    }
+                  ]
+                }
+              },
+              "right": {
+                "write": {
+                  "var": "x"
+                }
+              }
+            }
+          }
+        }
+      },
+      "input": "0",
+      "interpreterOnly": true,
+      "reference": {
+        "eval": {
+          "output": "9, 9",
+          "message": ""
+        },
+        "sm": null
+      },
+      "expected": {
+        "output": "9; 9",
+        "message": ""
+      }
+    },
+    {
+      "name": "new_variable",
+      "source": "{switch(1){case x -> y=2;}write(y);}",
+      "program": {
+        "seq": {
+          "left": {
+            "switch": {
+              "scrutinee": {
+                "const": 1
+              },
+              "branches": [
+                {
+                  "pattern": {
+                    "bind": {
+                      "pattern": {
+                        "wildcard": []
+                      },
+                      "name": "x"
+                    }
+                  },
+                  "branch": {
+                    "assn": {
+                      "dst": "y",
+                      "src": {
+                        "const": 2
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "right": {
+            "write": {
+              "var": "y"
+            }
+          }
+        }
+      },
+      "input": "0",
+      "interpreterOnly": true,
+      "reference": {
+        "eval": {
+          "output": "2",
+          "message": ""
+        },
+        "sm": null
+      },
+      "expected": {
+        "output": "2",
+        "message": ""
+      }
+    },
+    {
+      "name": "external_assignment",
+      "source": "{y=1;switch(1){case x -> y=2;}write(y);}",
+      "program": {
+        "seq": {
+          "left": {
+            "assn": {
+              "dst": "y",
+              "src": {
+                "const": 1
+              }
+            }
+          },
+          "right": {
+            "seq": {
+              "left": {
+                "switch": {
+                  "scrutinee": {
+                    "const": 1
+                  },
+                  "branches": [
+                    {
+                      "pattern": {
+                        "bind": {
+                          "pattern": {
+                            "wildcard": []
+                          },
+                          "name": "x"
+                        }
+                      },
+                      "branch": {
+                        "assn": {
+                          "dst": "y",
+                          "src": {
+                            "const": 2
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              },
+              "right": {
+                "write": {
+                  "var": "y"
+                }
+              }
+            }
+          }
+        }
+      },
+      "input": "0",
+      "interpreterOnly": true,
+      "reference": {
+        "eval": {
+          "output": "2",
+          "message": ""
+        },
+        "sm": null
+      },
+      "expected": {
+        "output": "2",
+        "message": ""
+      }
+    },
+    {
+      "name": "nested_scope",
+      "source": "{x=9;switch(1){case x -> switch(2){case x -> write(x);}write(x);}write(x);}",
+      "program": {
+        "seq": {
+          "left": {
+            "assn": {
+              "dst": "x",
+              "src": {
+                "const": 9
+              }
+            }
+          },
+          "right": {
+            "seq": {
+              "left": {
+                "switch": {
+                  "scrutinee": {
+                    "const": 1
+                  },
+                  "branches": [
+                    {
+                      "pattern": {
+                        "bind": {
+                          "pattern": {
+                            "wildcard": []
+                          },
+                          "name": "x"
+                        }
+                      },
+                      "branch": {
+                        "seq": {
+                          "left": {
+                            "switch": {
+                              "scrutinee": {
+                                "const": 2
+                              },
+                              "branches": [
+                                {
+                                  "pattern": {
+                                    "bind": {
+                                      "pattern": {
+                                        "wildcard": []
+                                      },
+                                      "name": "x"
+                                    }
+                                  },
+                                  "branch": {
+                                    "write": {
+                                      "var": "x"
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          },
+                          "right": {
+                            "write": {
+                              "var": "x"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              },
+              "right": {
+                "write": {
+                  "var": "x"
+                }
+              }
+            }
+          }
+        }
+      },
+      "input": "0",
+      "interpreterOnly": true,
+      "reference": {
+        "eval": {
+          "output": "2, 1, 9",
+          "message": ""
+        },
+        "sm": null
+      },
+      "expected": {
+        "output": "2; 1; 9",
+        "message": ""
+      }
+    },
+    {
+      "name": "alias_mutation",
+      "source": "{a=[1];switch(a){case x -> x[0]=2;}write(a);}",
+      "program": {
+        "seq": {
+          "left": {
+            "assn": {
+              "dst": "a",
+              "src": {
+                "array": [
+                  {
+                    "const": 1
+                  }
+                ]
+              }
+            }
+          },
+          "right": {
+            "seq": {
+              "left": {
+                "switch": {
+                  "scrutinee": {
+                    "var": "a"
+                  },
+                  "branches": [
+                    {
+                      "pattern": {
+                        "bind": {
+                          "pattern": {
+                            "wildcard": []
+                          },
+                          "name": "x"
+                        }
+                      },
+                      "branch": {
+                        "set": {
+                          "dst": {
+                            "var": "x"
+                          },
+                          "idx": {
+                            "const": 0
+                          },
+                          "value": {
+                            "const": 2
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              },
+              "right": {
+                "write": {
+                  "var": "a"
+                }
+              }
+            }
+          }
+        }
+      },
+      "input": "0",
+      "interpreterOnly": true,
+      "reference": {
+        "eval": {
+          "output": "[2]",
+          "message": ""
+        },
+        "sm": null
+      },
+      "expected": {
+        "output": "[2]",
+        "message": ""
+      }
+    },
+    {
+      "name": "read_bound_variable",
+      "source": "{x=9;switch(1){case x -> read(x);write(x);}write(x);read(y);write(y);}",
+      "program": {
+        "seq": {
+          "left": {
+            "assn": {
+              "dst": "x",
+              "src": {
+                "const": 9
+              }
+            }
+          },
+          "right": {
+            "seq": {
+              "left": {
+                "switch": {
+                  "scrutinee": {
+                    "const": 1
+                  },
+                  "branches": [
+                    {
+                      "pattern": {
+                        "bind": {
+                          "pattern": {
+                            "wildcard": []
+                          },
+                          "name": "x"
+                        }
+                      },
+                      "branch": {
+                        "seq": {
+                          "left": {
+                            "read": "x"
+                          },
+                          "right": {
+                            "write": {
+                              "var": "x"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              },
+              "right": {
+                "seq": {
+                  "left": {
+                    "write": {
+                      "var": "x"
+                    }
+                  },
+                  "right": {
+                    "seq": {
+                      "left": {
+                        "read": "y"
+                      },
+                      "right": {
+                        "write": {
+                          "var": "y"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "input": "2,3",
+      "interpreterOnly": true,
+      "reference": {
+        "eval": {
+          "output": "2, 9, 3",
+          "message": ""
+        },
+        "sm": null
+      },
+      "expected": {
+        "output": "2; 9; 3",
+        "message": ""
+      }
+    },
+    {
+      "name": "loop",
+      "source": "{i=0;while(i<3){switch(i){case 0 -> write(0); | case x -> write(x);}i+=1;}}",
+      "program": {
+        "seq": {
+          "left": {
+            "assn": {
+              "dst": "i",
+              "src": {
+                "const": 0
+              }
+            }
+          },
+          "right": {
+            "while": {
+              "cond": {
+                "binop": "<",
+                "left": {
+                  "var": "i"
+                },
+                "right": {
+                  "const": 3
+                }
+              },
+              "body": {
+                "seq": {
+                  "left": {
+                    "switch": {
+                      "scrutinee": {
+                        "var": "i"
+                      },
+                      "branches": [
+                        {
+                          "pattern": 0,
+                          "branch": {
+                            "write": {
+                              "const": 0
+                            }
+                          }
+                        },
+                        {
+                          "pattern": {
+                            "bind": {
+                              "pattern": {
+                                "wildcard": []
+                              },
+                              "name": "x"
+                            }
+                          },
+                          "branch": {
+                            "write": {
+                              "var": "x"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  "right": {
+                    "assn": {
+                      "dst": "i",
+                      "src": {
+                        "binop": "+",
+                        "left": {
+                          "var": "i"
+                        },
+                        "right": {
+                          "const": 1
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "input": "0",
+      "interpreterOnly": true,
+      "reference": {
+        "eval": {
+          "output": "0, 1, 2",
+          "message": ""
+        },
+        "sm": null
+      },
+      "expected": {
+        "output": "0; 1; 2",
+        "message": ""
+      }
+    },
+    {
+      "name": "no_match",
+      "source": "{switch(1){case 2 -> write(0);}}",
+      "program": {
+        "switch": {
+          "scrutinee": {
+            "const": 1
+          },
+          "branches": [
+            {
+              "pattern": 2,
+              "branch": {
+                "write": {
+                  "const": 0
+                }
+              }
+            }
+          ]
+        }
+      },
+      "input": "0",
+      "interpreterOnly": true,
+      "reference": {
+        "eval": {
+          "output": "",
+          "message": "ERROR: match failure on 1"
+        },
+        "sm": null
+      },
+      "expected": {
+        "output": "",
+        "message": "ERROR: match failure on 1"
+      }
+    },
+    {
+      "name": "no_match_string",
+      "source": "{switch(\"a\"){case 2 -> write(0);}}",
+      "program": {
+        "switch": {
+          "scrutinee": {
+            "string": "a"
+          },
+          "branches": [
+            {
+              "pattern": 2,
+              "branch": {
+                "write": {
+                  "const": 0
+                }
+              }
+            }
+          ]
+        }
+      },
+      "input": "0",
+      "interpreterOnly": true,
+      "reference": {
+        "eval": {
+          "output": "",
+          "message": "ERROR: match failure on \"a\""
+        },
+        "sm": null
+      },
+      "expected": {
+        "output": "",
+        "message": "ERROR: match failure on a"
+      }
+    },
+    {
+      "name": "no_match_array",
+      "source": "{switch([1,2]){case [] -> write(0);}}",
+      "program": {
+        "switch": {
+          "scrutinee": {
+            "array": [
+              {
+                "const": 1
+              },
+              {
+                "const": 2
+              }
+            ]
+          },
+          "branches": [
+            {
+              "pattern": {
+                "array": []
+              },
+              "branch": {
+                "write": {
+                  "const": 0
+                }
+              }
+            }
+          ]
+        }
+      },
+      "input": "0",
+      "interpreterOnly": true,
+      "reference": {
+        "eval": {
+          "output": "",
+          "message": "ERROR: match failure on [1, 2]"
+        },
+        "sm": null
+      },
+      "expected": {
+        "output": "",
+        "message": "ERROR: match failure on [1; 2]"
+      }
+    },
+    {
+      "name": "scrutinee_error",
+      "source": "{switch(missing){case _ -> write(0);}}",
+      "program": {
+        "switch": {
+          "scrutinee": {
+            "var": "missing"
+          },
+          "branches": [
+            {
+              "pattern": {
+                "wildcard": []
+              },
+              "branch": {
+                "write": {
+                  "const": 0
+                }
+              }
+            }
+          ]
+        }
+      },
+      "input": "0",
+      "interpreterOnly": true,
+      "reference": {
+        "eval": {
+          "output": "",
+          "message": "ERROR: variable \"missing\" is undefined"
+        },
+        "sm": null
+      },
+      "expected": {
+        "output": "",
+        "message": "ERROR: variable \"missing\" is undefined"
+      }
+    },
+    {
+      "name": "local_removed",
+      "source": "{switch(1){case x -> skip;}write(x);}",
+      "program": {
+        "seq": {
+          "left": {
+            "switch": {
+              "scrutinee": {
+                "const": 1
+              },
+              "branches": [
+                {
+                  "pattern": {
+                    "bind": {
+                      "pattern": {
+                        "wildcard": []
+                      },
+                      "name": "x"
+                    }
+                  },
+                  "branch": "skip"
+                }
+              ]
+            }
+          },
+          "right": {
+            "write": {
+              "var": "x"
+            }
+          }
+        }
+      },
+      "input": "0",
+      "interpreterOnly": true,
+      "reference": {
+        "eval": {
+          "output": "",
+          "message": "ERROR: variable \"x\" is undefined"
+        },
+        "sm": null
+      },
+      "expected": {
+        "output": "",
+        "message": "ERROR: variable \"x\" is undefined"
+      }
+    },
+    {
+      "name": "error_discards_output",
+      "source": "{write(7);switch(1){case x -> write(missing);}}",
+      "program": {
+        "seq": {
+          "left": {
+            "write": {
+              "const": 7
+            }
+          },
+          "right": {
+            "switch": {
+              "scrutinee": {
+                "const": 1
+              },
+              "branches": [
+                {
+                  "pattern": {
+                    "bind": {
+                      "pattern": {
+                        "wildcard": []
+                      },
+                      "name": "x"
+                    }
+                  },
+                  "branch": {
+                    "write": {
+                      "var": "missing"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "input": "0",
+      "interpreterOnly": true,
+      "reference": {
+        "eval": {
+          "output": "",
+          "message": "ERROR: variable \"missing\" is undefined"
+        },
+        "sm": null
+      },
+      "expected": {
+        "output": "",
+        "message": "ERROR: variable \"missing\" is undefined"
+      }
+    },
+    {
+      "name": "reserved_literal",
+      "source": "{switch(\"#int\"){case \"#int\" -> write(1); | case _ -> write(0);}}",
+      "program": {
+        "switch": {
+          "scrutinee": {
+            "string": "#int"
+          },
+          "branches": [
+            {
+              "pattern": "#int",
+              "branch": {
+                "write": {
+                  "const": 1
+                }
+              }
+            },
+            {
+              "pattern": {
+                "wildcard": []
+              },
+              "branch": {
+                "write": {
+                  "const": 0
+                }
+              }
+            }
+          ]
+        }
+      },
+      "input": "0",
+      "interpreterOnly": true,
+      "reference": {
+        "eval": {
+          "output": "1",
+          "message": ""
+        },
+        "sm": null
+      },
+      "expected": {
+        "output": "0",
+        "message": ""
+      },
+      "difference": "The exported string \"#int\" is reserved for the type pattern; the reference literal loses its distinction in JSON."
+    },
+    {
+      "name": "reserved_literal_numeric",
+      "source": "{switch(1){case \"#int\" -> write(1); | case _ -> write(0);}}",
+      "program": {
+        "switch": {
+          "scrutinee": {
+            "const": 1
+          },
+          "branches": [
+            {
+              "pattern": "#int",
+              "branch": {
+                "write": {
+                  "const": 1
+                }
+              }
+            },
+            {
+              "pattern": {
+                "wildcard": []
+              },
+              "branch": {
+                "write": {
+                  "const": 0
+                }
+              }
+            }
+          ]
+        }
+      },
+      "input": "0",
+      "interpreterOnly": true,
+      "reference": {
+        "eval": {
+          "output": "0",
+          "message": ""
+        },
+        "sm": null
+      },
+      "expected": {
+        "output": "1",
+        "message": ""
+      },
+      "difference": "The exported string \"#int\" is reserved for the type pattern."
+    },
+    {
+      "name": "concat_strings",
+      "source": "{write(\"a\"+\"b\");}",
+      "program": {
+        "write": {
+          "binop": "+",
+          "left": {
+            "string": "a"
+          },
+          "right": {
+            "string": "b"
+          }
+        }
+      },
+      "instructions": [
+        {
+          "STRING": "a"
+        },
+        {
+          "STRING": "b"
+        },
+        {
+          "BINOP": "+"
+        },
+        "WRITE"
+      ],
+      "input": "0",
+      "interpreterOnly": false,
+      "reference": {
+        "eval": {
+          "output": "\"ab\"",
+          "message": ""
+        },
+        "sm": {
+          "output": "\"ab\"",
+          "message": ""
+        }
+      },
+      "expected": {
+        "output": "ab",
+        "message": ""
+      }
+    },
+    {
+      "name": "concat_integer_left",
+      "source": "{write(12+\"x\");}",
+      "program": {
+        "write": {
+          "binop": "+",
+          "left": {
+            "const": 12
+          },
+          "right": {
+            "string": "x"
+          }
+        }
+      },
+      "instructions": [
+        {
+          "CONST": 12
+        },
+        {
+          "STRING": "x"
+        },
+        {
+          "BINOP": "+"
+        },
+        "WRITE"
+      ],
+      "input": "0",
+      "interpreterOnly": false,
+      "reference": {
+        "eval": {
+          "output": "\"12x\"",
+          "message": ""
+        },
+        "sm": {
+          "output": "\"12x\"",
+          "message": ""
+        }
+      },
+      "expected": {
+        "output": "12x",
+        "message": ""
+      }
+    },
+    {
+      "name": "concat_integer_right",
+      "source": "{write(\"x\"+(0-12));}",
+      "program": {
+        "write": {
+          "binop": "+",
+          "left": {
+            "string": "x"
+          },
+          "right": {
+            "binop": "-",
+            "left": {
+              "const": 0
+            },
+            "right": {
+              "const": 12
+            }
+          }
+        }
+      },
+      "instructions": [
+        {
+          "STRING": "x"
+        },
+        {
+          "CONST": 0
+        },
+        {
+          "CONST": 12
+        },
+        {
+          "BINOP": "-"
+        },
+        {
+          "BINOP": "+"
+        },
+        "WRITE"
+      ],
+      "input": "0",
+      "interpreterOnly": false,
+      "reference": {
+        "eval": {
+          "output": "\"x-12\"",
+          "message": ""
+        },
+        "sm": {
+          "output": "\"x-12\"",
+          "message": ""
+        }
+      },
+      "expected": {
+        "output": "x-12",
+        "message": ""
+      }
+    },
+    {
+      "name": "concat_unicode",
+      "source": "{write(\"я\"+\"🙂\");}",
+      "program": {
+        "write": {
+          "binop": "+",
+          "left": {
+            "string": "я"
+          },
+          "right": {
+            "string": "🙂"
+          }
+        }
+      },
+      "instructions": [
+        {
+          "STRING": "я"
+        },
+        {
+          "STRING": "🙂"
+        },
+        {
+          "BINOP": "+"
+        },
+        "WRITE"
+      ],
+      "input": "0",
+      "interpreterOnly": false,
+      "reference": {
+        "eval": {
+          "output": "\"я🙂\"",
+          "message": ""
+        },
+        "sm": {
+          "output": "\"я🙂\"",
+          "message": ""
+        }
+      },
+      "expected": {
+        "output": "я🙂",
+        "message": ""
+      }
+    },
+    {
+      "name": "concat_empty",
+      "source": "{write(\"\"+\"\");write(\"\"+1);write(1+\"\");}",
+      "program": {
+        "seq": {
+          "left": {
+            "write": {
+              "binop": "+",
+              "left": {
+                "string": ""
+              },
+              "right": {
+                "string": ""
+              }
+            }
+          },
+          "right": {
+            "seq": {
+              "left": {
+                "write": {
+                  "binop": "+",
+                  "left": {
+                    "string": ""
+                  },
+                  "right": {
+                    "const": 1
+                  }
+                }
+              },
+              "right": {
+                "write": {
+                  "binop": "+",
+                  "left": {
+                    "const": 1
+                  },
+                  "right": {
+                    "string": ""
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "instructions": [
+        {
+          "STRING": ""
+        },
+        {
+          "STRING": ""
+        },
+        {
+          "BINOP": "+"
+        },
+        "WRITE",
+        {
+          "STRING": ""
+        },
+        {
+          "CONST": 1
+        },
+        {
+          "BINOP": "+"
+        },
+        "WRITE",
+        {
+          "CONST": 1
+        },
+        {
+          "STRING": ""
+        },
+        {
+          "BINOP": "+"
+        },
+        "WRITE"
+      ],
+      "input": "0",
+      "interpreterOnly": false,
+      "reference": {
+        "eval": {
+          "output": "\"\", \"1\", \"1\"",
+          "message": ""
+        },
+        "sm": {
+          "output": "\"\", \"1\", \"1\"",
+          "message": ""
+        }
+      },
+      "expected": {
+        "output": "; 1; 1",
+        "message": ""
+      }
+    },
+    {
+      "name": "concat_independent",
+      "source": "{s=\"abc\";t=s+\"\";s[0]=90;write(s);write(t);}",
+      "program": {
+        "seq": {
+          "left": {
+            "assn": {
+              "dst": "s",
+              "src": {
+                "string": "abc"
+              }
+            }
+          },
+          "right": {
+            "seq": {
+              "left": {
+                "assn": {
+                  "dst": "t",
+                  "src": {
+                    "binop": "+",
+                    "left": {
+                      "var": "s"
+                    },
+                    "right": {
+                      "string": ""
+                    }
+                  }
+                }
+              },
+              "right": {
+                "seq": {
+                  "left": {
+                    "set": {
+                      "dst": {
+                        "var": "s"
+                      },
+                      "idx": {
+                        "const": 0
+                      },
+                      "value": {
+                        "const": 90
+                      }
+                    }
+                  },
+                  "right": {
+                    "seq": {
+                      "left": {
+                        "write": {
+                          "var": "s"
+                        }
+                      },
+                      "right": {
+                        "write": {
+                          "var": "t"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "instructions": [
+        {
+          "STRING": "abc"
+        },
+        {
+          "ST": "s"
+        },
+        {
+          "LD": "s"
+        },
+        {
+          "STRING": ""
+        },
+        {
+          "BINOP": "+"
+        },
+        {
+          "ST": "t"
+        },
+        {
+          "LD": "s"
+        },
+        {
+          "CONST": 0
+        },
+        {
+          "CONST": 90
+        },
+        "SET",
+        {
+          "LD": "s"
+        },
+        "WRITE",
+        {
+          "LD": "t"
+        },
+        "WRITE"
+      ],
+      "input": "0",
+      "interpreterOnly": false,
+      "reference": {
+        "eval": {
+          "output": "\"Zbc\", \"abc\"",
+          "message": ""
+        },
+        "sm": {
+          "output": "\"Zbc\", \"abc\"",
+          "message": ""
+        }
+      },
+      "expected": {
+        "output": "Zbc; abc",
+        "message": ""
+      }
+    },
+    {
+      "name": "concat_independent_right",
+      "source": "{s=\"abc\";t=\"\"+s;t[0]=90;write(s);write(t);}",
+      "program": {
+        "seq": {
+          "left": {
+            "assn": {
+              "dst": "s",
+              "src": {
+                "string": "abc"
+              }
+            }
+          },
+          "right": {
+            "seq": {
+              "left": {
+                "assn": {
+                  "dst": "t",
+                  "src": {
+                    "binop": "+",
+                    "left": {
+                      "string": ""
+                    },
+                    "right": {
+                      "var": "s"
+                    }
+                  }
+                }
+              },
+              "right": {
+                "seq": {
+                  "left": {
+                    "set": {
+                      "dst": {
+                        "var": "t"
+                      },
+                      "idx": {
+                        "const": 0
+                      },
+                      "value": {
+                        "const": 90
+                      }
+                    }
+                  },
+                  "right": {
+                    "seq": {
+                      "left": {
+                        "write": {
+                          "var": "s"
+                        }
+                      },
+                      "right": {
+                        "write": {
+                          "var": "t"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "instructions": [
+        {
+          "STRING": "abc"
+        },
+        {
+          "ST": "s"
+        },
+        {
+          "STRING": ""
+        },
+        {
+          "LD": "s"
+        },
+        {
+          "BINOP": "+"
+        },
+        {
+          "ST": "t"
+        },
+        {
+          "LD": "t"
+        },
+        {
+          "CONST": 0
+        },
+        {
+          "CONST": 90
+        },
+        "SET",
+        {
+          "LD": "s"
+        },
+        "WRITE",
+        {
+          "LD": "t"
+        },
+        "WRITE"
+      ],
+      "input": "0",
+      "interpreterOnly": false,
+      "reference": {
+        "eval": {
+          "output": "\"abc\", \"Zbc\"",
+          "message": ""
+        },
+        "sm": {
+          "output": "\"abc\", \"Zbc\"",
+          "message": ""
+        }
+      },
+      "expected": {
+        "output": "abc; Zbc",
+        "message": ""
+      }
+    },
+    {
+      "name": "concat_invalid_utf8",
+      "source": "{s=\"a\";s[0]=226;t=\"b\";t[0]=130;write(s+t);}",
+      "program": {
+        "seq": {
+          "left": {
+            "assn": {
+              "dst": "s",
+              "src": {
+                "string": "a"
+              }
+            }
+          },
+          "right": {
+            "seq": {
+              "left": {
+                "set": {
+                  "dst": {
+                    "var": "s"
+                  },
+                  "idx": {
+                    "const": 0
+                  },
+                  "value": {
+                    "const": 226
+                  }
+                }
+              },
+              "right": {
+                "seq": {
+                  "left": {
+                    "assn": {
+                      "dst": "t",
+                      "src": {
+                        "string": "b"
+                      }
+                    }
+                  },
+                  "right": {
+                    "seq": {
+                      "left": {
+                        "set": {
+                          "dst": {
+                            "var": "t"
+                          },
+                          "idx": {
+                            "const": 0
+                          },
+                          "value": {
+                            "const": 130
+                          }
+                        }
+                      },
+                      "right": {
+                        "write": {
+                          "binop": "+",
+                          "left": {
+                            "var": "s"
+                          },
+                          "right": {
+                            "var": "t"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "instructions": [
+        {
+          "STRING": "a"
+        },
+        {
+          "ST": "s"
+        },
+        {
+          "LD": "s"
+        },
+        {
+          "CONST": 0
+        },
+        {
+          "CONST": 226
+        },
+        "SET",
+        {
+          "STRING": "b"
+        },
+        {
+          "ST": "t"
+        },
+        {
+          "LD": "t"
+        },
+        {
+          "CONST": 0
+        },
+        {
+          "CONST": 130
+        },
+        "SET",
+        {
+          "LD": "s"
+        },
+        {
+          "LD": "t"
+        },
+        {
+          "BINOP": "+"
+        },
+        "WRITE"
+      ],
+      "input": "0",
+      "interpreterOnly": false,
+      "reference": {
+        "eval": {
+          "output": "\"�\"",
+          "message": ""
+        },
+        "sm": {
+          "output": "\"�\"",
+          "message": ""
+        }
+      },
+      "expected": {
+        "output": "�",
+        "message": ""
+      }
+    },
+    {
+      "name": "numeric_overflow",
+      "source": "{write(2147483647+1);write(\"x\"+(2147483647+1));}",
+      "program": {
+        "seq": {
+          "left": {
+            "write": {
+              "binop": "+",
+              "left": {
+                "const": 2147483647
+              },
+              "right": {
+                "const": 1
+              }
+            }
+          },
+          "right": {
+            "write": {
+              "binop": "+",
+              "left": {
+                "string": "x"
+              },
+              "right": {
+                "binop": "+",
+                "left": {
+                  "const": 2147483647
+                },
+                "right": {
+                  "const": 1
+                }
+              }
+            }
+          }
+        }
+      },
+      "instructions": [
+        {
+          "CONST": 2147483647
+        },
+        {
+          "CONST": 1
+        },
+        {
+          "BINOP": "+"
+        },
+        "WRITE",
+        {
+          "STRING": "x"
+        },
+        {
+          "CONST": 2147483647
+        },
+        {
+          "CONST": 1
+        },
+        {
+          "BINOP": "+"
+        },
+        {
+          "BINOP": "+"
+        },
+        "WRITE"
+      ],
+      "input": "0",
+      "interpreterOnly": false,
+      "reference": {
+        "eval": {
+          "output": "-2147483648, \"x-2147483648\"",
+          "message": ""
+        },
+        "sm": {
+          "output": "-2147483648, \"x-2147483648\"",
+          "message": ""
+        }
+      },
+      "expected": {
+        "output": "-2147483648; x-2147483648",
+        "message": ""
+      }
+    },
+    {
+      "name": "concat_array",
+      "source": "{write([1]+[2]);}",
+      "program": {
+        "write": {
+          "binop": "+",
+          "left": {
+            "array": [
+              {
+                "const": 1
+              }
+            ]
+          },
+          "right": {
+            "array": [
+              {
+                "const": 2
+              }
+            ]
+          }
+        }
+      },
+      "instructions": [
+        {
+          "CONST": 1
+        },
+        {
+          "ARRAY": 1
+        },
+        {
+          "CONST": 2
+        },
+        {
+          "ARRAY": 1
+        },
+        {
+          "BINOP": "+"
+        },
+        "WRITE"
+      ],
+      "input": "0",
+      "interpreterOnly": false,
+      "reference": {
+        "eval": {
+          "output": "",
+          "message": "ERROR: binary operator \"+\" is applied to [1] and [2]"
+        },
+        "sm": {
+          "output": "",
+          "message": "ERROR: binary operator \"+\" is applied to [1] and [2]"
+        }
+      },
+      "expected": {
+        "output": "",
+        "message": "ERROR: binary operator \"+\" is applied to [1] and [2]"
+      }
+    },
+    {
+      "name": "concat_constructor",
+      "source": "{write(Leaf+\"x\");}",
+      "program": {
+        "write": {
+          "binop": "+",
+          "left": {
+            "sexp": "Leaf",
+            "args": []
+          },
+          "right": {
+            "string": "x"
+          }
+        }
+      },
+      "instructions": [
+        {
+          "SEXP": [
+            "Leaf",
+            0
+          ]
+        },
+        {
+          "STRING": "x"
+        },
+        {
+          "BINOP": "+"
+        },
+        "WRITE"
+      ],
+      "input": "0",
+      "interpreterOnly": false,
+      "reference": {
+        "eval": {
+          "output": "",
+          "message": "ERROR: binary operator \"+\" is applied to Leaf and \"x\""
+        },
+        "sm": {
+          "output": "",
+          "message": "ERROR: binary operator \"+\" is applied to Leaf and \"x\""
+        }
+      },
+      "expected": {
+        "output": "",
+        "message": "ERROR: binary operator \"+\" is applied to Leaf and x"
+      }
+    },
+    {
+      "name": "input_constructor",
+      "source": "{read(x);write(x);}",
+      "program": {
+        "seq": {
+          "left": {
+            "read": "x"
+          },
+          "right": {
+            "write": {
+              "var": "x"
+            }
+          }
+        }
+      },
+      "instructions": [
+        "READ",
+        {
+          "ST": "x"
+        },
+        {
+          "LD": "x"
+        },
+        "WRITE"
+      ],
+      "input": "Pair(1,{2,3})",
+      "interpreterOnly": false,
+      "reference": {
+        "eval": {
+          "output": "Pair (1, {2, 3})",
+          "message": ""
+        },
+        "sm": {
+          "output": "Pair (1, {2, 3})",
+          "message": ""
+        }
+      },
+      "expected": {
+        "output": "Pair (1, {2, 3})",
+        "message": ""
+      }
+    },
+    {
+      "name": "input_nullary",
+      "source": "{read(x);write(x);}",
+      "program": {
+        "seq": {
+          "left": {
+            "read": "x"
+          },
+          "right": {
+            "write": {
+              "var": "x"
+            }
+          }
+        }
+      },
+      "instructions": [
+        "READ",
+        {
+          "ST": "x"
+        },
+        {
+          "LD": "x"
+        },
+        "WRITE"
+      ],
+      "input": "Leaf",
+      "interpreterOnly": false,
+      "reference": {
+        "eval": {
+          "output": "Leaf",
+          "message": ""
+        },
+        "sm": {
+          "output": "Leaf",
+          "message": ""
+        }
+      },
+      "expected": {
+        "output": "Leaf",
+        "message": ""
+      }
+    },
+    {
+      "name": "input_list",
+      "source": "{read(x);write(x);}",
+      "program": {
+        "seq": {
+          "left": {
+            "read": "x"
+          },
+          "right": {
+            "write": {
+              "var": "x"
+            }
+          }
+        }
+      },
+      "instructions": [
+        "READ",
+        {
+          "ST": "x"
+        },
+        {
+          "LD": "x"
+        },
+        "WRITE"
+      ],
+      "input": "{1,2}",
+      "interpreterOnly": false,
+      "reference": {
+        "eval": {
+          "output": "{1, 2}",
+          "message": ""
+        },
+        "sm": {
+          "output": "{1, 2}",
+          "message": ""
+        }
+      },
+      "expected": {
+        "output": "{1, 2}",
+        "message": ""
+      }
+    },
+    {
+      "name": "input_empty_list",
+      "source": "{read(x);write(x);}",
+      "program": {
+        "seq": {
+          "left": {
+            "read": "x"
+          },
+          "right": {
+            "write": {
+              "var": "x"
+            }
+          }
+        }
+      },
+      "instructions": [
+        "READ",
+        {
+          "ST": "x"
+        },
+        {
+          "LD": "x"
+        },
+        "WRITE"
+      ],
+      "input": "{}",
+      "interpreterOnly": false,
+      "reference": {
+        "eval": {
+          "output": "{}",
+          "message": ""
+        },
+        "sm": {
+          "output": "{}",
+          "message": ""
+        }
+      },
+      "expected": {
+        "output": "{}",
+        "message": ""
+      }
+    },
+    {
+      "name": "input_nested",
+      "source": "{read(x);write(x);}",
+      "program": {
+        "seq": {
+          "left": {
+            "read": "x"
+          },
+          "right": {
+            "write": {
+              "var": "x"
+            }
+          }
+        }
+      },
+      "instructions": [
+        "READ",
+        {
+          "ST": "x"
+        },
+        {
+          "LD": "x"
+        },
+        "WRITE"
+      ],
+      "input": "Box([1,\"x\"],{Pair(2,3),Leaf})",
+      "interpreterOnly": false,
+      "reference": {
+        "eval": {
+          "output": "Box ([1, \"x\"], {Pair (2, 3), Leaf})",
+          "message": ""
+        },
+        "sm": {
+          "output": "Box ([1, \"x\"], {Pair (2, 3), Leaf})",
+          "message": ""
+        }
+      },
+      "expected": {
+        "output": "Box ([1; x], {Pair (2, 3), Leaf})",
+        "message": ""
+      }
+    },
+    {
+      "name": "input_mixed",
+      "source": "{read(x);read(y);read(z);write(x);write(y);write(z);}",
+      "program": {
+        "seq": {
+          "left": {
+            "read": "x"
+          },
+          "right": {
+            "seq": {
+              "left": {
+                "read": "y"
+              },
+              "right": {
+                "seq": {
+                  "left": {
+                    "read": "z"
+                  },
+                  "right": {
+                    "seq": {
+                      "left": {
+                        "write": {
+                          "var": "x"
+                        }
+                      },
+                      "right": {
+                        "seq": {
+                          "left": {
+                            "write": {
+                              "var": "y"
+                            }
+                          },
+                          "right": {
+                            "write": {
+                              "var": "z"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "instructions": [
+        "READ",
+        {
+          "ST": "x"
+        },
+        "READ",
+        {
+          "ST": "y"
+        },
+        "READ",
+        {
+          "ST": "z"
+        },
+        {
+          "LD": "x"
+        },
+        "WRITE",
+        {
+          "LD": "y"
+        },
+        "WRITE",
+        {
+          "LD": "z"
+        },
+        "WRITE"
+      ],
+      "input": "[1,{2,3}],Leaf,-4",
+      "interpreterOnly": false,
+      "reference": {
+        "eval": {
+          "output": "[1, {2, 3}], Leaf, -4",
+          "message": ""
+        },
+        "sm": {
+          "output": "[1, {2, 3}], Leaf, -4",
+          "message": ""
+        }
+      },
+      "expected": {
+        "output": "[1; {2, 3}]; Leaf; -4",
+        "message": ""
+      }
+    },
+    {
+      "name": "input_comments",
+      "source": "{read(x);write(x);}",
+      "program": {
+        "seq": {
+          "left": {
+            "read": "x"
+          },
+          "right": {
+            "write": {
+              "var": "x"
+            }
+          }
+        }
+      },
+      "instructions": [
+        "READ",
+        {
+          "ST": "x"
+        },
+        {
+          "LD": "x"
+        },
+        "WRITE"
+      ],
+      "input": "(* outer (* nested *) *) Pair(-1, {2, -- line\n3})",
+      "interpreterOnly": false,
+      "reference": {
+        "eval": {
+          "output": "Pair (-1, {2, 3})",
+          "message": ""
+        },
+        "sm": {
+          "output": "Pair (-1, {2, 3})",
+          "message": ""
+        }
+      },
+      "expected": {
+        "output": "Pair (-1, {2, 3})",
+        "message": ""
+      }
+    },
+    {
+      "name": "input_characters",
+      "source": "{read(a);read(b);read(c);read(d);write(a);write(b);write(c);write(d);}",
+      "program": {
+        "seq": {
+          "left": {
+            "read": "a"
+          },
+          "right": {
+            "seq": {
+              "left": {
+                "read": "b"
+              },
+              "right": {
+                "seq": {
+                  "left": {
+                    "read": "c"
+                  },
+                  "right": {
+                    "seq": {
+                      "left": {
+                        "read": "d"
+                      },
+                      "right": {
+                        "seq": {
+                          "left": {
+                            "write": {
+                              "var": "a"
+                            }
+                          },
+                          "right": {
+                            "seq": {
+                              "left": {
+                                "write": {
+                                  "var": "b"
+                                }
+                              },
+                              "right": {
+                                "seq": {
+                                  "left": {
+                                    "write": {
+                                      "var": "c"
+                                    }
+                                  },
+                                  "right": {
+                                    "write": {
+                                      "var": "d"
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "instructions": [
+        "READ",
+        {
+          "ST": "a"
+        },
+        "READ",
+        {
+          "ST": "b"
+        },
+        "READ",
+        {
+          "ST": "c"
+        },
+        "READ",
+        {
+          "ST": "d"
+        },
+        {
+          "LD": "a"
+        },
+        "WRITE",
+        {
+          "LD": "b"
+        },
+        "WRITE",
+        {
+          "LD": "c"
+        },
+        "WRITE",
+        {
+          "LD": "d"
+        },
+        "WRITE"
+      ],
+      "input": "'A', '\\n', '\\t', ''''",
+      "interpreterOnly": false,
+      "reference": {
+        "eval": {
+          "output": "65, 10, 9, 39",
+          "message": ""
+        },
+        "sm": {
+          "output": "65, 10, 9, 39",
+          "message": ""
+        }
+      },
+      "expected": {
+        "output": "65; 10; 9; 39",
+        "message": ""
+      }
+    },
+    {
+      "name": "input_alias",
+      "source": "{read(x);y=x;write(x);y[0]=9;write(y);}",
+      "program": {
+        "seq": {
+          "left": {
+            "read": "x"
+          },
+          "right": {
+            "seq": {
+              "left": {
+                "assn": {
+                  "dst": "y",
+                  "src": {
+                    "var": "x"
+                  }
+                }
+              },
+              "right": {
+                "seq": {
+                  "left": {
+                    "write": {
+                      "var": "x"
+                    }
+                  },
+                  "right": {
+                    "seq": {
+                      "left": {
+                        "set": {
+                          "dst": {
+                            "var": "y"
+                          },
+                          "idx": {
+                            "const": 0
+                          },
+                          "value": {
+                            "const": 9
+                          }
+                        }
+                      },
+                      "right": {
+                        "write": {
+                          "var": "y"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "instructions": [
+        "READ",
+        {
+          "ST": "x"
+        },
+        {
+          "LD": "x"
+        },
+        {
+          "ST": "y"
+        },
+        {
+          "LD": "x"
+        },
+        "WRITE",
+        {
+          "LD": "y"
+        },
+        {
+          "CONST": 0
+        },
+        {
+          "CONST": 9
+        },
+        "SET",
+        {
+          "LD": "y"
+        },
+        "WRITE"
+      ],
+      "input": "Pair(1,2)",
+      "interpreterOnly": false,
+      "reference": {
+        "eval": {
+          "output": "Pair (9, 2), Pair (9, 2)",
+          "message": ""
+        },
+        "sm": {
+          "output": "Pair (9, 2), Pair (9, 2)",
+          "message": ""
+        }
+      },
+      "expected": {
+        "output": "Pair (9, 2); Pair (9, 2)",
+        "message": ""
+      }
+    },
+    {
+      "name": "input_list_mutation",
+      "source": "{read(x);x[1][0]=9;write(x);}",
+      "program": {
+        "seq": {
+          "left": {
+            "read": "x"
+          },
+          "right": {
+            "seq": {
+              "left": {
+                "set": {
+                  "dst": {
+                    "elem": {
+                      "var": "x"
+                    },
+                    "index": {
+                      "const": 1
+                    }
+                  },
+                  "idx": {
+                    "const": 0
+                  },
+                  "value": {
+                    "const": 9
+                  }
+                }
+              },
+              "right": {
+                "write": {
+                  "var": "x"
+                }
+              }
+            }
+          }
+        }
+      },
+      "instructions": [
+        "READ",
+        {
+          "ST": "x"
+        },
+        {
+          "LD": "x"
+        },
+        {
+          "CONST": 1
+        },
+        "ELEM",
+        {
+          "CONST": 0
+        },
+        {
+          "CONST": 9
+        },
+        "SET",
+        {
+          "LD": "x"
+        },
+        "WRITE"
+      ],
+      "input": "{1,2}",
+      "interpreterOnly": false,
+      "reference": {
+        "eval": {
+          "output": "{1, 9}",
+          "message": ""
+        },
+        "sm": {
+          "output": "{1, 9}",
+          "message": ""
+        }
+      },
+      "expected": {
+        "output": "{1, 9}",
+        "message": ""
+      }
+    },
+    {
+      "name": "input_exhausted",
+      "source": "{read(x);read(y);}",
+      "program": {
+        "seq": {
+          "left": {
+            "read": "x"
+          },
+          "right": {
+            "read": "y"
+          }
+        }
+      },
+      "instructions": [
+        "READ",
+        {
+          "ST": "x"
+        },
+        "READ",
+        {
+          "ST": "y"
+        }
+      ],
+      "input": "Leaf",
+      "interpreterOnly": false,
+      "reference": {
+        "eval": {
+          "output": "",
+          "message": "ERROR: input exhausted"
+        },
+        "sm": {
+          "output": "",
+          "message": "ERROR: input exhausted"
+        }
+      },
+      "expected": {
+        "output": "",
+        "message": "ERROR: input exhausted"
+      }
+    }
+  ]
+}

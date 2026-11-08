@@ -42,10 +42,21 @@ func TestWebReference(t *testing.T) {
 	if len(expectations) != 8 {
 		t.Fatal("expected eight explicit differences from the old eval reference")
 	}
+	overrides, err := os.ReadFile("../../tests/testdata/runtime_expectations.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var runtimeExpectations map[string]map[string]struct{ Output, Message string }
+	if err := json.Unmarshal(overrides, &runtimeExpectations); err != nil {
+		t.Fatal(err)
+	}
 	for _, tc := range corpus.Cases {
 		t.Run(tc.Name, func(t *testing.T) {
 			if message, ok := expectations[tc.Name]; ok {
 				tc.Message = message
+			}
+			if expected, ok := runtimeExpectations["interpreter/reference.json"][tc.Name]; ok {
+				tc.Output, tc.Message = expected.Output, expected.Message
 			}
 			var out bytes.Buffer
 			err := Run(tc.Program, strings.NewReader(tc.Input), &out)

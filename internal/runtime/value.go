@@ -209,15 +209,7 @@ func compare(op string, left, right Value, active map[valuePair]bool) (int, erro
 			return 0, nil
 		}
 	}
-	l, err := formatted(left)
-	if err != nil {
-		return 0, err
-	}
-	r, err := formatted(right)
-	if err != nil {
-		return 0, err
-	}
-	return 0, fmt.Errorf("ERROR: binary operator \"%s\" is applied to %s and %s", op, l, r)
+	return 0, binaryTypeError(op, left, right)
 }
 
 func ValidOperator(op string) bool {
@@ -228,6 +220,9 @@ func ValidOperator(op string) bool {
 	return false
 }
 func Binary(op string, left, right Value) (Value, error) {
+	if op == "+" {
+		return add(left, right)
+	}
 	switch op {
 	case "==", "!=", "<", "<=", ">", ">=":
 		diagnosticOp := op
@@ -270,8 +265,6 @@ func Binary(op string, left, right Value) (Value, error) {
 		return nil, err
 	}
 	switch op {
-	case "+":
-		return l + r, nil
 	case "-":
 		return l - r, nil
 	case "*":
@@ -296,6 +289,44 @@ func Binary(op string, left, right Value) (Value, error) {
 		return int32(0), nil
 	}
 	return nil, fmt.Errorf("unknown operator %q", op)
+}
+
+func add(left, right Value) (Value, error) {
+	var l, r []byte
+	switch left := left.(type) {
+	case int32:
+		if right, ok := right.(int32); ok {
+			return left + right, nil
+		}
+		l = strconv.AppendInt(nil, int64(left), 10)
+	case []byte:
+		l = left
+	default:
+		return nil, binaryTypeError("+", left, right)
+	}
+	switch right := right.(type) {
+	case int32:
+		r = strconv.AppendInt(nil, int64(right), 10)
+	case []byte:
+		r = right
+	default:
+		return nil, binaryTypeError("+", left, right)
+	}
+	result := make([]byte, 0, len(l)+len(r))
+	result = append(result, l...)
+	return append(result, r...), nil
+}
+
+func binaryTypeError(op string, left, right Value) error {
+	l, err := formatted(left)
+	if err != nil {
+		return err
+	}
+	r, err := formatted(right)
+	if err != nil {
+		return err
+	}
+	return fmt.Errorf("ERROR: binary operator \"%s\" is applied to %s and %s", op, l, r)
 }
 
 func decodeText(raw string) string {

@@ -19,7 +19,7 @@ func parseInput(text string) ([]Value, error) {
 	if p.pos == len(text) {
 		return nil, nil
 	}
-	return p.list(false)
+	return p.values(0, true)
 }
 
 func (p *inputParser) fail(message string) error {
@@ -66,9 +66,12 @@ func (p *inputParser) starts(s string) bool {
 	return len(p.text)-p.pos >= len(s) && p.text[p.pos:p.pos+len(s)] == s
 }
 
-func (p *inputParser) list(array bool) ([]Value, error) {
+func (p *inputParser) values(close byte, allowEmpty bool) ([]Value, error) {
 	var result []Value
-	if array && p.pos < len(p.text) && p.text[p.pos] == ']' {
+	if close != 0 && p.pos < len(p.text) && p.text[p.pos] == close {
+		if !allowEmpty {
+			return nil, p.fail("expected a value")
+		}
 		p.pos++
 		return result, nil
 	}
@@ -81,16 +84,15 @@ func (p *inputParser) list(array bool) ([]Value, error) {
 		if err = p.space(); err != nil {
 			return nil, err
 		}
-		if array {
-			if p.pos < len(p.text) && p.text[p.pos] == ']' {
-				p.pos++
-				return result, nil
-			}
-		} else if p.pos == len(p.text) {
+		if close != 0 && p.pos < len(p.text) && p.text[p.pos] == close {
+			p.pos++
+			return result, nil
+		}
+		if close == 0 && p.pos == len(p.text) {
 			return result, nil
 		}
 		if p.pos == len(p.text) || p.text[p.pos] != ',' {
-			return nil, p.fail("expected ','")
+			return nil, p.fail("expected ',' or end of values")
 		}
 		p.pos++
 		if err = p.space(); err != nil {
@@ -104,13 +106,28 @@ func (p *inputParser) value() (Value, error) {
 		return nil, p.fail("expected a value")
 	}
 	switch p.text[p.pos] {
-	case '[':
+	case '[', '{':
+		opener := p.text[p.pos]
 		p.pos++
 		if err := p.space(); err != nil {
 			return nil, err
 		}
-		elements, err := p.list(true)
-		return &array{elements: elements}, err
+		close := byte(']')
+		if opener == '{' {
+			close = '}'
+		}
+		elements, err := p.values(close, true)
+		if err != nil {
+			return nil, err
+		}
+		if opener == '[' {
+			return NewArray(elements), nil
+		}
+		list := NewSExpression("nil", nil)
+		for i := len(elements) - 1; i >= 0; i-- {
+			list = NewSExpression("cons", []Value{elements[i], list})
+		}
+		return list, nil
 	case '"':
 		p.pos++
 		var b []byte
@@ -128,7 +145,12 @@ func (p *inputParser) value() (Value, error) {
 			b = append(b, current)
 		}
 		return nil, p.fail("unterminated string")
+	case '\'':
+		return p.character()
 	default:
+		if p.text[p.pos] >= 'A' && p.text[p.pos] <= 'Z' {
+			return p.constructor()
+		}
 		start := p.pos
 		if p.text[p.pos] == '-' {
 			p.pos++
@@ -138,7 +160,7 @@ func (p *inputParser) value() (Value, error) {
 			p.pos++
 		}
 		if digits == p.pos {
-			return nil, p.fail("expected an integer, string or array")
+			return nil, p.fail("expected an integer, string, array, constructor, list or character")
 		}
 		n, err := strconv.ParseInt(p.text[start:p.pos], 10, 32)
 		if err != nil {
@@ -146,6 +168,64 @@ func (p *inputParser) value() (Value, error) {
 		}
 		return int32(n), nil
 	}
+}
+
+func (p *inputParser) constructor() (Value, error) {
+	start := p.pos
+	p.pos++
+	for p.pos < len(p.text) {
+		c := p.text[p.pos]
+		if !(c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c >= '0' && c <= '9' || c == '_') {
+			break
+		}
+		p.pos++
+	}
+	name := p.text[start:p.pos]
+	if err := p.space(); err != nil {
+		return nil, err
+	}
+	if p.pos == len(p.text) || p.text[p.pos] != '(' {
+		return NewSExpression(name, nil), nil
+	}
+	p.pos++
+	if err := p.space(); err != nil {
+		return nil, err
+	}
+	args, err := p.values(')', false)
+	if err != nil {
+		return nil, err
+	}
+	return NewSExpression(name, args), nil
+}
+
+func (p *inputParser) character() (Value, error) {
+	p.pos++
+	if p.pos == len(p.text) {
+		return nil, p.fail("unterminated character")
+	}
+	var ch byte
+	switch {
+	case p.starts("''"):
+		ch = '\''
+		p.pos += 2
+	case p.starts(`\n`):
+		ch = '\n'
+		p.pos += 2
+	case p.starts(`\t`):
+		ch = '\t'
+		p.pos += 2
+	default:
+		ch = p.text[p.pos]
+		if ch == '\'' {
+			return nil, p.fail("expected one character")
+		}
+		p.pos++
+	}
+	if p.pos == len(p.text) || p.text[p.pos] != '\'' {
+		return nil, p.fail("expected closing character quote")
+	}
+	p.pos++
+	return int32(ch), nil
 }
 
 func ReadInput(input io.Reader) ([]Value, error) {

@@ -42,7 +42,7 @@ func TestAggregateInstructions(t *testing.T) {
 		{"char_255", `[{"STRING":"a"},{"ST":"s"},{"LD":"s"},{"CONST":0},{"CONST":255},"SET",{"LD":"s"},"WRITE"]`, "", "�", ""},
 		{"truncated_utf8", `[{"STRING":"ab"},{"ST":"s"},{"LD":"s"},{"CONST":0},{"CONST":226},"SET",{"LD":"s"},{"CONST":1},{"CONST":130},"SET",{"LD":"s"},"WRITE"]`, "", "�", ""},
 		{"condition_type", `[{"STRING":"a"},{"JZ":"end"},{"LABEL":"end"}]`, "", "", `ERROR: integer value expected but "a" given`},
-		{"right_operand_type_first", `[{"STRING":"left"},{"STRING":"right"},{"BINOP":"+"}]`, "", "", `ERROR: integer value expected but "right" given`},
+		{"right_operand_type_first", `[{"STRING":"left"},{"STRING":"right"},{"BINOP":"-"}]`, "", "", `ERROR: integer value expected but "right" given`},
 		{"partial_output_discarded", `[{"CONST":7},"WRITE",{"LD":"missing"},"WRITE"]`, "", "", `ERROR: variable "missing" is undefined`},
 	} {
 		t.Run(test.name, func(t *testing.T) {

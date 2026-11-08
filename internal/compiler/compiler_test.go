@@ -37,6 +37,19 @@ func loadCases(t *testing.T, filename string) []astCase {
 	if err := json.Unmarshal(data, &corpus); err != nil {
 		t.Fatal(err)
 	}
+	overrides, err := os.ReadFile("../../tests/testdata/runtime_expectations.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var expectations map[string]map[string]struct{ Output, Message string }
+	if err := json.Unmarshal(overrides, &expectations); err != nil {
+		t.Fatal(err)
+	}
+	for i := range corpus.Cases {
+		if expected, ok := expectations[filename][corpus.Cases[i].Name]; ok {
+			corpus.Cases[i].Output, corpus.Cases[i].Message = expected.Output, expected.Message
+		}
+	}
 	if len(corpus.Cases) == 0 {
 		t.Fatal("empty AST corpus")
 	}

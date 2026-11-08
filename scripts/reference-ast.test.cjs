@@ -216,6 +216,7 @@ test('both routes accept strings, quotes, unicode and mixed arrays from input', 
   for (const [input, expected] of [
     ['[1,"hello",[]]', '[1; hello; []]'],
     ['" a,b "', ' a,b '], ['"a""b"', 'a"b'], ['"я🙂"', 'я🙂'], ['[]', '[]'],
+    ['Pair(1,{2,3})', 'Pair (1, {2, 3})'], ['Leaf', 'Leaf'], ['{}', '{}'], ["'A'", '65'],
   ]) {
     fs.writeFileSync(f.env.INPUT, input);
     for (const mode of ['run', 'run-sm']) {
@@ -223,6 +224,56 @@ test('both routes accept strings, quotes, unicode and mixed arrays from input', 
       success(result);
       assert.equal(result.stdout, expected);
     }
+  }
+});
+
+test('switch runs in the AST interpreter and compilation preserves output files on rejection', t => {
+  const f = fixture(t);
+  const ast = f.file('switch.json', JSON.stringify({switch: {
+    scrutinee: {sexp: 'Pair', args: [{const: 1}, {const: 2}]},
+    branches: [{pattern: {sexp: 'Pair', args: [
+      {bind: {name: 'x', pattern: {wildcard: []}}},
+      {bind: {name: 'y', pattern: {wildcard: []}}},
+    ]}, branch: {write: {binop: '+', left: {var: 'x'}, right: {var: 'y'}}}}],
+  }}));
+  const env = {SOURCE: '', AST: ast, REFERENCE: 'unused'};
+  const result = f.invoke('run', env);
+  success(result);
+  assert.equal(result.stdout, '3');
+  const target = f.file('existing.txt', 'preserved');
+  for (const mode of ['compile', 'run-sm']) {
+    const failure = f.invoke(mode, {...env, CODE: target, OUTPUT: target});
+    assert.equal(failure.status, 1);
+    assert.equal(failure.stdout, '');
+    assert.equal(failure.stderr, 'compile: AST: switch is supported only by the AST interpreter\n');
+    assert.equal(fs.readFileSync(target, 'utf8'), 'preserved');
+  }
+});
+
+test('match failure discards pending output and preserves the result file', t => {
+  const f = fixture(t);
+  const ast = f.file('no-match.json', JSON.stringify({seq: {
+    left: {write: {const: 7}},
+    right: {switch: {scrutinee: {const: 1}, branches: [{pattern: 2, branch: 'skip'}]}},
+  }}));
+  const target = f.file('result.txt', 'preserved');
+  const result = f.invoke('run', {SOURCE: '', AST: ast, OUTPUT: target});
+  assert.equal(result.status, 1);
+  assert.equal(result.stdout, '');
+  assert.equal(result.stderr, 'ERROR: match failure on 1\n');
+  assert.equal(fs.readFileSync(target, 'utf8'), 'preserved');
+});
+
+test('both routes concatenate a value read from input', t => {
+  const f = fixture(t);
+  fs.writeFileSync(f.env.INPUT, '22');
+  const ast = f.file('concat.json', JSON.stringify({seq: {
+    left: {read: 'x'}, right: {write: {binop: '+', left: {string: 'value='}, right: {var: 'x'}}},
+  }}));
+  for (const mode of ['run', 'run-sm']) {
+    const result = f.invoke(mode, {SOURCE: '', AST: ast});
+    success(result);
+    assert.equal(result.stdout, 'value=22');
   }
 });
 
